@@ -14,7 +14,7 @@ void setup() {
 void loop() {
 	checkUsb1();
 	checkUsb2();
-	checkUsb3();
+	checkUsb3(); 
 
 }
 

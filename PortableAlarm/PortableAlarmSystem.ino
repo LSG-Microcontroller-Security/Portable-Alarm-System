@@ -6,28 +6,19 @@
 #endif
 //#include <MemoryFree.h>
 //#include <pgmStrToRAM.h>
-#include "MyBlueTooth.h"
-#include "BlueToothCommandsUtil.h"
-#include "LSGEEpromRW.h" 
+#include <MyBlueTooth.h>
+#include <BlueToothCommandsUtil.h>
+#include <LSGEEpromRW.h> 
 #include <EEPROM.h> 
-#include "MySim900.h"
-#include "ActivityManager.h"
-
-
+#include <MySim900.h>
+#include <ActivityManager.h>
 char version[15] = "S001 7.86-RTM";
-
 //Library version : 6.55-RTM
-
 ActivityManager* _delayForTemperature = new ActivityManager(60);
-
 ActivityManager* _delayForVoltage = new ActivityManager(60);
-
 //ActivityManager* _delayForGetCoordinates= new ActivityManager(120);
-
 //ActivityManager* _delayForFindPhone = new ActivityManager(30); 
-
 //ActivityManager* _delayForSignalStrength = new ActivityManager(30);
-
 MyBlueTooth* btSerial;
 
 MySim900* mySim900;

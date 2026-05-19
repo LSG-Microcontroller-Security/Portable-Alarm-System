@@ -6,20 +6,12 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{62142BBE-1833-483D-8F24-5D4523907830}"
 	ProjectSection(SolutionItems) = preProject
 		.travis.yml = .travis.yml
-		..\Libraries\LSG_ActivityManager\ActivityManager.cpp = ..\Libraries\LSG_ActivityManager\ActivityManager.cpp
-		..\Libraries\LSG_ActivityManager\ActivityManager.h = ..\Libraries\LSG_ActivityManager\ActivityManager.h
-		..\Libraries\LSG_Utils\MySim900.cpp = ..\Libraries\LSG_Utils\MySim900.cpp
-		..\Libraries\LSG_Utils\MySim900.h = ..\Libraries\LSG_Utils\MySim900.h
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_library", "_library", "{02ED6CDB-0C8E-45BD-8EC5-ED7F59AE5B93}"
 	ProjectSection(SolutionItems) = preProject
-		..\Libraries\LSG_ActivityManager\ActivityManager.cpp = ..\Libraries\LSG_ActivityManager\ActivityManager.cpp
-		..\Libraries\LSG_ActivityManager\ActivityManager.h = ..\Libraries\LSG_ActivityManager\ActivityManager.h
-		..\Libraries\MyBlueTooth\MyBlueTooth.cpp = ..\Libraries\MyBlueTooth\MyBlueTooth.cpp
-		..\Libraries\MyBlueTooth\MyBlueTooth.h = ..\Libraries\MyBlueTooth\MyBlueTooth.h
-		..\Libraries\LSG_Utils\MySim900.cpp = ..\Libraries\LSG_Utils\MySim900.cpp
-		..\Libraries\LSG_Utils\MySim900.h = ..\Libraries\LSG_Utils\MySim900.h
+		..\..\MicroControllerTeamProject\libraries\MyBlueTooth\MyBlueTooth.cpp = ..\..\MicroControllerTeamProject\libraries\MyBlueTooth\MyBlueTooth.cpp
+		..\..\MicroControllerTeamProject\libraries\MyBlueTooth\MyBlueTooth.h = ..\..\MicroControllerTeamProject\libraries\MyBlueTooth\MyBlueTooth.h
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PortableAlarmTest", "PortableAlarmTest\PortableAlarmTest.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"

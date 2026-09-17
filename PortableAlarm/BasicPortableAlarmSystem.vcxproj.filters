@@ -21,7 +21,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PortableAlarmSystem.ino" />
+    <ClCompile Include="Portable-Alarm-System.ino" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Eagle\ChargeStepUpBoard.brd">

@@ -12,6 +12,18 @@
 #include <EEPROM.h> 
 #include <MySim900.h>
 #include <ActivityManager.h>
+
+#ifndef DEBUG_SERIAL
+#define DEBUG_SERIAL 0U
+#endif
+
+#if DEBUG_SERIAL
+#define DEBUG_SERIAL_PRINT(...) do { Serial.print(__VA_ARGS__); } while (0)
+#define DEBUG_SERIAL_PRINTLN(...) do { Serial.println(__VA_ARGS__); } while (0)
+#else
+#define DEBUG_SERIAL_PRINT(...) do { } while (0)
+#define DEBUG_SERIAL_PRINTLN(...) do { } while (0)
+#endif
 char version[15] = "S001 7.86-RTM";
 //Library version : 6.55-RTM
 ActivityManager* _delayForTemperature = new ActivityManager(60);
@@ -20,212 +32,116 @@ ActivityManager* _delayForVoltage = new ActivityManager(60);
 //ActivityManager* _delayForFindPhone = new ActivityManager(30); 
 //ActivityManager* _delayForSignalStrength = new ActivityManager(30);
 MyBlueTooth* btSerial;
-
 MySim900* mySim900;
-
 String _oldPassword = "";
-
 String _newPassword = "";
-
 #pragma region pinsDefinition
-
 const byte _pin_powerLed = 13;
-
 const uint8_t _pin_pir = A5;
-
 const uint8_t _pin_buzzer = 5;
-
 const byte _pin_rxSIM900 = 7;
-
 const byte _pin_txSIM900 = 8;
-
 const byte _pin_reedRelay = A4;
-
 #pragma endregion pinsDefinition
-
 const byte _addressStartBufPhoneNumber = 1;
-
 const byte _addressStartBufPrecisionNumber = 12;
-
 const byte _addressStartBufTemperatureIsOn = 14;
-
 const byte _addressStartBufTemperatureMax = 16;
-
 const byte _addressStartBufPirSensorIsON = 19;
-
 const byte _addressStartDeviceAddress = 21;
-
-const byte _addressStartDeviceName = 33;
-
-const byte _addressStartFindOutPhonesON = 48;
-
-const byte _addressStartBTSleepIsON = 50;
-
-const byte _addressDBPhoneIsON = 52;
-
-const byte _addressStartBufPhoneNumberAlternative = 54;
-
-const byte _addressStartFindMode = 65;
-
-const byte _addressApn = 67;
-
-const byte _addressOffSetTemperature = 92;
-
-const byte _addressDelayFindMe = 94;
-
-const byte _addressExternalInterruptIsOn = 96;
-
-const byte _addressStartDeviceAddress2 = 98;
-
-const byte _addressStartDeviceName2 = 110;
-
-const byte _addressBuzzerIsOn = 122;
-
+const byte _addressStartDeviceName = 36;
+const byte _addressStartFindOutPhonesON = 51;
+const byte _addressStartBTSleepIsON = 53;
+const byte _addressDBPhoneIsON = 55;
+const byte _addressStartBufPhoneNumberAlternative = 57;
+const byte _addressStartFindMode = 68;
+const byte _addressApn = 70;
+const byte _addressOffSetTemperature = 95;
+const byte _addressDelayFindMe = 100;
+const byte _addressExternalInterruptIsOn = 102;
+const byte _addressStartDeviceAddress2 = 104;
+const byte _addressStartDeviceName2 = 119;
+const byte _addressBuzzerIsOn = 134;
 uint8_t _isPIRSensorActivated = 0;
-
 bool _isBlueLedDisable = true;
-
 bool _isDisableCall = false;
-
 bool _isOnMotionDetect = false;
-
 bool _isOnExternalMotionDetect = false;
-
 bool _isPositionEnable = false;
-
 unsigned long _sensitivityAlarm;
-
 char _prefix[4] = "+39";
-
 bool _isAlarmOn = false;
-
 char _phoneNumber[11];
-
 char _phoneNumberAlternative[11];
-
 String _whatIsHappened = "";
-
 uint8_t _isBTSleepON = 1;
-
 uint8_t _isExternalInterruptOn = 0;
-
 uint8_t _isBuzzerOn = 0;
-
 uint8_t _phoneNumbers = 0;
-
 uint8_t _findOutPhonesMode = 0;
-
 uint8_t _tempMax = 0;
-
 uint8_t _delayFindMe = 1;
-
-unsigned int _offSetTempValue = 324.13;
-
+unsigned int _offSetTempValue = 324;
 String _signalStrength;
-
 String _deviceAddress = "";
-
 String _deviceAddress2 = "";
-
 String _deviceName = "";
-
 String _deviceName2 = "";
-
 float _voltageValue = 0;
-
 float _voltageMinValue = 0;
-
 bool _isMasterMode = false;
-
 bool _isExtenalInterruptNormalyClosed = true;
-
 unsigned long _timeToTurnOnAlarm = millis() + 300000;
-
 //String _apn = "";
-
 bool _isDeviceDetected = false;
-
 const int BUFSIZEPHONENUMBER = 11;
-
 const int BUFSIZEPHONENUMBERALTERANATIVE = 11;
-
 const int BUFSIZEPIRSENSORISON = 2;
 char _bufPirSensorIsON[BUFSIZEPIRSENSORISON];
-
 const int BUFSIZEFINDOUTPHONESON = 2;
 char _bufFindOutPhonesON[BUFSIZEFINDOUTPHONESON];
-
 const int BUFSIZEDBPHONEON = 2;
 char _bufDbPhoneON[BUFSIZEDBPHONEON];
-
 const int BUFSIZETEMPERATUREMAX = 3;
 char _bufTemperatureMax[BUFSIZETEMPERATUREMAX];
-
-const int BUFSIZEDEVICEADDRESS = 13;
+const int BUFSIZEDEVICEADDRESS = 15;
 char _bufDeviceAddress[BUFSIZEDEVICEADDRESS];
 char _bufDeviceAddress2[BUFSIZEDEVICEADDRESS];
-
-
 const int BUFSIZEDEVICENAME = 15;
 char _bufDeviceName[BUFSIZEDEVICENAME];
 char _bufDeviceName2[BUFSIZEDEVICENAME];
-
 const int BUFSIZEAPN = 25;
 char _bufApn[BUFSIZEAPN];
-
 const int BUFSIZEOFFSETTEMPERATURE = 5;
 char _bufOffSetTemperature[BUFSIZEOFFSETTEMPERATURE];
-
 const int BUFSIZEDELAYFINDME = 2;
 char _bufDelayFindMe[BUFSIZEDELAYFINDME];
-
 const int BUFSIZEEXTERNALINTERRUPTISON = 2;
 char _bufExternalInterruptIsON[BUFSIZEEXTERNALINTERRUPTISON];
-
 const int BUFSIZEBUZZERISON = 2;
 char _bufBuzzerIsON[BUFSIZEBUZZERISON];
-
-void setup()
-{
+void setup() {
 	mySim900 = new MySim900(_pin_rxSIM900, _pin_txSIM900, false);
-
 	mySim900->Begin(19200);
-
 	mySim900->IsCallDisabled(false);
-	
 	inizializePins();
-
 	inizializeInterrupts();
-
 	btSerial = new MyBlueTooth(&Serial, 10, 6, 38400, 9600);
-
 	btSerial->Reset_To_Slave_Mode();
-
 	//mySim900->getCCLK();
-
 	_oldPassword = btSerial->GetPassword();
-
 	//Serial.print("oldPassword : "); Serial.println(_oldPassword);
-
 	btSerial->ReceveMode();
-
 	initilizeEEPromData();
-
-	if (_findOutPhonesMode != 0)
-	{
+	if (_findOutPhonesMode != 0) {
 		_isBTSleepON = 0;
 		btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Find activated"), BlueToothCommandsUtil::Message));
 		btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
 	}
-
 	btSerial->turnOnBlueTooth();
-
 	_whatIsHappened = F("X");
-
 	mySim900->ATCommand("AT+CNETLIGHT=0");
-
 	delay(500);
-
 	mySim900->ATCommand("AT+CPMS=\"SM\"");
 	delay(500);
 	/*if (mySim900->IsAvailable() > 0)
@@ -247,146 +163,97 @@ void setup()
 		String s = mySim900->ReadIncomingChars2();
 		Serial.println(s);
 	}*/
-
 	delay(1000);
-
 	mySim900->ATCommand("AT+CBAND=""EGSM_PCS_MODE""");
-
 	delay(1000);
-
-	if (mySim900->IsAvailable() > 0)
-	{
+	if (mySim900->IsAvailable() > 0) {
 		String s = mySim900->ReadIncomingChars2();
-		//Serial.println(s);
+		DEBUG_SERIAL_PRINTLN(s);
 	}
-
 	pinMode(_pin_pir, INPUT_PULLUP);
-
 	blinkLedHideMode();
-
 	//Serial.println(btSerial->getVersion());
 }
-
-void initilizeEEPromData()
-{
+void initilizeEEPromData() {
 	LSG_EEpromRW* eepromRW = new LSG_EEpromRW();
-
 	eepromRW->eeprom_read_string(_addressStartBufPhoneNumber, _phoneNumber, BUFSIZEPHONENUMBER);
-
 	eepromRW->eeprom_read_string(_addressStartBufPhoneNumberAlternative, _phoneNumberAlternative, BUFSIZEPHONENUMBERALTERANATIVE);
-
 	eepromRW->eeprom_read_string(_addressDBPhoneIsON, _bufDbPhoneON, BUFSIZEDBPHONEON);
 	_phoneNumbers = atoi(&_bufDbPhoneON[0]);
-
 	eepromRW->eeprom_read_string(_addressStartFindOutPhonesON, _bufFindOutPhonesON, BUFSIZEFINDOUTPHONESON);
 	_findOutPhonesMode = atoi(&_bufFindOutPhonesON[0]);
-
 	eepromRW->eeprom_read_string(_addressStartBufPirSensorIsON, _bufPirSensorIsON, BUFSIZEPIRSENSORISON);
 	_isPIRSensorActivated = atoi(&_bufPirSensorIsON[0]);
-
 	eepromRW->eeprom_read_string(_addressStartBufTemperatureMax, _bufTemperatureMax, BUFSIZETEMPERATUREMAX);
 	_tempMax = atoi(_bufTemperatureMax);
-
 	eepromRW->eeprom_read_string(_addressStartDeviceAddress, _bufDeviceAddress, BUFSIZEDEVICEADDRESS);
-	_deviceAddress = F("005A,13,389DC0");// +String(_bufDeviceAddress);
-
+	_deviceAddress = _bufDeviceAddress;
+	// Esempio formato indirizzo Bluetooth: _deviceAddress = F("005A,13,389DC0");
 	eepromRW->eeprom_read_string(_addressStartDeviceName, _bufDeviceName, BUFSIZEDEVICENAME);
-	_deviceName = F("PhoneAccess001");//String(_bufDeviceName);
-
+	_deviceName = _bufDeviceName;
+	// Esempio formato nome Bluetooth: _deviceName = F("PhoneAccess001");
 	eepromRW->eeprom_read_string(_addressStartDeviceAddress2, _bufDeviceAddress2, BUFSIZEDEVICEADDRESS);
-	_deviceAddress2 = F("0019,09,037A0D");// +String(_bufDeviceAddress2);
-
+	_deviceAddress2 = _bufDeviceAddress2;
 	eepromRW->eeprom_read_string(_addressStartDeviceName2, _bufDeviceName2, BUFSIZEDEVICENAME);
-	_deviceName2 = F("portablePcb");// String(_bufDeviceName2);
-
+	_deviceName2 = _bufDeviceName2;
 	/*eepromRW->eeprom_read_string(_addressApn, _bufApn, BUFSIZEAPN);
 	_apn = String(_bufApn);
 	_apn.trim();*/
-
 	eepromRW->eeprom_read_string(_addressOffSetTemperature, _bufOffSetTemperature, BUFSIZEOFFSETTEMPERATURE);
 	_offSetTempValue = atoi(_bufOffSetTemperature);
-
 	eepromRW->eeprom_read_string(_addressDelayFindMe, _bufDelayFindMe, BUFSIZEDELAYFINDME);
 	_delayFindMe = atoi(_bufDelayFindMe);
-
 	eepromRW->eeprom_read_string(_addressExternalInterruptIsOn, _bufExternalInterruptIsON, BUFSIZEEXTERNALINTERRUPTISON);
 	_isExternalInterruptOn = atoi(&_bufExternalInterruptIsON[0]);
-
 	eepromRW->eeprom_read_string(_addressBuzzerIsOn, _bufBuzzerIsON, BUFSIZEBUZZERISON);
 	_isBuzzerOn = atoi(&_bufBuzzerIsON[0]);
-
 	delete(eepromRW);
 }
-
-void inizializePins()
-{
+void inizializePins() {
 	pinMode(_pin_powerLed, OUTPUT);
 	pinMode(0, INPUT_PULLUP);
 }
-
-void inizializeInterrupts()
-{
+void inizializeInterrupts() {
 	attachInterrupt(0, motionTiltInternalInterrupt, RISING);
 	attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
 }
-
-void callSim900()
-{
+void callSim900() {
 	//Serial.println("Faccio chiamata");
-
 	if (_isDisableCall) { return; }
-
 	char phoneNumber[14];
-
 	strcpy(phoneNumber, _prefix);
-
-	if (_phoneNumbers == 1)
-	{
+	if (_phoneNumbers == 1) {
 		strcat(phoneNumber, _phoneNumber);
 	}
-
-	if (_phoneNumbers == 2)
-	{
+	if (_phoneNumbers == 2) {
 		strcat(phoneNumber, _phoneNumberAlternative);
 	}
-
 	mySim900->DialVoiceCall(phoneNumber);
-
 	delay(1000);
-
 	//Inserita per scaricare buffer dopo chiamata
 	//dove si puo aggiungere codice per recupero risultato.
 	//E agevola la pulizia per la ricezione sms.
 	mySim900->ReadIncomingChars2();
-
 }
-
 void motionTiltExternalInterrupt() {
 	if (_isExternalInterruptOn /*&& !_isPIRSensorActivated*/) {
 		_isOnExternalMotionDetect = true;
 	}
 }
-
-void motionTiltInternalInterrupt()
-{
+void motionTiltInternalInterrupt() {
 	if (!_isPIRSensorActivated) {
 		_isOnMotionDetect = true;
 	}
 }
-
-void getSignalStrength()
-{
+void getSignalStrength() {
 	_signalStrength = mySim900->GetSignalStrength();
 }
-
-void turnOffBluetoohIfTimeIsOver()
-{
+void turnOffBluetoohIfTimeIsOver() {
 	if (_findOutPhonesMode == 0
 		&& (millis() > _timeToTurnOnAlarm)
 		&& btSerial->isBlueToothOn()
 		&& _isBTSleepON
-		)
-	{
+		) {
 		btSerial->turnOffBlueTooth();
 	}
 }
@@ -404,8 +271,7 @@ void turnOffBluetoohIfTimeIsOver()
 //	}
 //}
 
-void findOutPhonesONAndSetBluetoothInMasterModeActivity()
-{
+void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	if (_isDisableCall) { return; }
 	//todo:da mettere in altro luogo.
 	_deviceAddress.trim();
@@ -420,14 +286,12 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity()
 			_isAlarmOn = true;
 		}*/
 
-	if (_isMasterMode == false)
-	{
+	if (_isMasterMode == false) {
 		btSerial->Reset_To_Master_Mode();
 		_isMasterMode = true;
 	}
 
-	for (uint8_t i = 0; i < _delayFindMe; i++)
-	{
+	for (uint8_t i = 0; i < _delayFindMe; i++) {
 		if (_phoneNumbers == 1) {
 			_isDeviceDetected = btSerial->IsDeviceDetected(_deviceAddress, _deviceName);
 			if (_isDeviceDetected) {
@@ -435,27 +299,24 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity()
 				//Serial.println("Find first BT");
 			}
 		}
-	/*	if (_findOutPhonesMode == 1)
-		{*/
-			
-			if (_phoneNumbers == 2) {
-				_isDeviceDetected = btSerial->IsDeviceDetected(_deviceAddress2, _deviceName2);
-				if (_isDeviceDetected) { 
-					//Serial.println("Find second BT");
-					break; 
-				};
-			}
+		/*	if (_findOutPhonesMode == 1)
+			{*/
+
+		if (_phoneNumbers == 2) {
+			_isDeviceDetected = btSerial->IsDeviceDetected(_deviceAddress2, _deviceName2);
+			if (_isDeviceDetected) {
+				//Serial.println("Find second BT");
+				break;
+			};
+		}
 		//}
 	}
-	if (_isDeviceDetected)
-	{
+	if (_isDeviceDetected) {
 		blinkLedHideMode();
 		//reedRelaySensorActivity(_pin_reedRelay);
 	}
-	else
-	{
-		if (_findOutPhonesMode == 2)
-		{
+	else {
+		if (_findOutPhonesMode == 2) {
 			callSim900();
 			_isMasterMode = false;
 		}
@@ -464,13 +325,11 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity()
 	//}
 }
 
-void loop()
-{
+void loop() {
 	readIncomingSMS();
 
-	if ((millis() > _timeToTurnOnAlarm) && _isAlarmOn != true)
-	{
-		_isAlarmOn = true; 
+	if ((millis() > _timeToTurnOnAlarm) && _isAlarmOn != true) {
+		_isAlarmOn = true;
 	}
 
 	//if (!(_isOnMotionDetect && _isAlarmOn))
@@ -483,16 +342,14 @@ void loop()
 	//	getSignalStrength();
 	//}
 
-	if (_isAlarmOn && (_findOutPhonesMode == 1 || _findOutPhonesMode == 2))
-	{
+	if (_isAlarmOn && (_findOutPhonesMode == 1 || _findOutPhonesMode == 2)) {
 		findOutPhonesONAndSetBluetoothInMasterModeActivity();
 	}
 	//if (_delayForCallNumbers->IsDelayTimeFinished(true))
 	//{
 	//	_callNumbers = 0;
 	//}
-	if (!(_isOnMotionDetect && _isAlarmOn))
-	{
+	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		turnOffBluetoohIfTimeIsOver();
 	}
 	/*if (!(_isOnMotionDetect && _isAlarmOn))
@@ -500,13 +357,11 @@ void loop()
 		turnOnBlueToothIfMotionIsDetected();
 	}*/
 
-	if (!(_isOnMotionDetect && _isAlarmOn))
-	{
+	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		internalTemperatureActivity();
 	}
 
-	if (!(_isOnMotionDetect && _isAlarmOn))
-	{
+	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		voltageActivity();
 	}
 
@@ -518,21 +373,18 @@ void loop()
 	//	}
 	//}
 
-	if (!(_isOnMotionDetect && _isAlarmOn))
-	{
+	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		pirSensorActivity();
 	}
 
 	motionDetectActivity();
 
-	if (!(_isOnMotionDetect && _isAlarmOn))
-	{
+	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		blueToothConfigurationSystem();
 	}
 }
 
-void motionDetectActivity()
-{
+void motionDetectActivity() {
 	if (_isDisableCall || _findOutPhonesMode == 2 || _isPIRSensorActivated) {
 		_isOnMotionDetect = false;
 		return;
@@ -542,15 +394,14 @@ void motionDetectActivity()
 	//	_millsStart = 0;
 	//	_isFirstTilt = true;
 	//}
-	
+
 	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && _isExternalInterruptOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))))
 	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))) || _isExternalInterruptOn))	/*if(true)*/
-	
-	if (_isAlarmOn && ((_isOnMotionDetect && !_isExternalInterruptOn) 
-		|| _isOnExternalMotionDetect 
-		|| ((_isExtenalInterruptNormalyClosed ^ digitalRead(3)) 
-		&& _isExternalInterruptOn)))
-	{
+
+	if (_isAlarmOn && ((_isOnMotionDetect && !_isExternalInterruptOn)
+		|| _isOnExternalMotionDetect
+		|| ((_isExtenalInterruptNormalyClosed ^ digitalRead(3))
+			&& _isExternalInterruptOn))) {
 		blinkLedHideMode();
 
 		detachInterrupt(0);
@@ -559,16 +410,13 @@ void motionDetectActivity()
 
 		_whatIsHappened = F("M");
 
-		if (_findOutPhonesMode == 1)
-		{
-			if (!_isDeviceDetected)
-			{
+		if (_findOutPhonesMode == 1) {
+			if (!_isDeviceDetected) {
 				callSim900();
 				_isMasterMode = false;
 			}
 		}
-		else
-		{
+		else {
 			callSim900();
 			_isMasterMode = false;
 		}
@@ -606,8 +454,7 @@ void motionDetectActivity()
 //	btSerial->ReceveMode();
 //}
 
-void turnOnBlueToothAndSetTurnOffTimer()
-{
+void turnOnBlueToothAndSetTurnOffTimer() {
 	Serial.flush();
 	btSerial->Reset_To_Slave_Mode();
 	//if (_findOutPhonesMode == 0 || isFromSMS)
@@ -620,11 +467,9 @@ void turnOnBlueToothAndSetTurnOffTimer()
 	_isMasterMode = false;
 }
 
-void blinkLedHideMode()
-{
+void blinkLedHideMode() {
 	if (_isBlueLedDisable) { return; }
-	for (uint8_t i = 0; i < 3; i++)
-	{
+	for (uint8_t i = 0; i < 3; i++) {
 		digitalWrite(_pin_powerLed, HIGH);
 		delay(50);
 		digitalWrite(_pin_powerLed, LOW);
@@ -632,10 +477,8 @@ void blinkLedHideMode()
 	}
 }
 
-void blinkLed(uint8_t blinkDelay,uint8_t numberOfBlinks)
-{
-	for (uint8_t i = 0; i < numberOfBlinks; i++)
-	{
+void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
+	for (uint8_t i = 0; i < numberOfBlinks; i++) {
 		digitalWrite(_pin_powerLed, HIGH);
 		delay(blinkDelay);
 		digitalWrite(_pin_powerLed, LOW);
@@ -643,8 +486,7 @@ void blinkLed(uint8_t blinkDelay,uint8_t numberOfBlinks)
 	}
 }
 
-String splitStringIndex(String data, char separator, int index)
-{
+String splitStringIndex(String data, char separator, int index) {
 	int found = 0;
 	int strIndex[] = { 0, -1 };
 	int maxIndex = data.length() - 1;
@@ -675,16 +517,13 @@ String calculateBatteryLevel(float batteryLevel)
 
 }
 
-void loadMainMenu()
-{
+void loadMainMenu() {
 	char* alarmStatus = new char[15];
 
-	if (_isAlarmOn)
-	{
+	if (_isAlarmOn) {
 		String(F("Alarm ON")).toCharArray(alarmStatus, 15);
 	}
-	else
-	{
+	else {
 		String(F("Alarm OFF")).toCharArray(alarmStatus, 15);
 	}
 
@@ -706,12 +545,10 @@ void loadMainMenu()
 
 	btSerial->println(BlueToothCommandsUtil::CommandConstructor("Security", BlueToothCommandsUtil::Menu, F("004")));
 
-	if (!_isAlarmOn)
-	{
+	if (!_isAlarmOn) {
 		btSerial->println(BlueToothCommandsUtil::CommandConstructor("Alarm On", BlueToothCommandsUtil::Command, F("002")));
 	}
-	else
-	{
+	else {
 		btSerial->println(BlueToothCommandsUtil::CommandConstructor("Alarm OFF", BlueToothCommandsUtil::Command, F("003")));
 	}
 
@@ -731,8 +568,7 @@ void loadMainMenu()
 
 }
 
-void loadConfigurationMenu()
-{
+void loadConfigurationMenu() {
 	btSerial->println(BlueToothCommandsUtil::CommandConstructor("Configuration", BlueToothCommandsUtil::Title));
 
 	btSerial->println(BlueToothCommandsUtil::CommandConstructor("Phone:" + String(_phoneNumber), BlueToothCommandsUtil::Data, F("001")));
@@ -747,13 +583,11 @@ void loadConfigurationMenu()
 
 	//btSerial->println(BlueToothCommandsUtil::CommandConstructor("Apn:" + _apn, BlueToothCommandsUtil::Data, F("096")));
 
-	if (_findOutPhonesMode != 2)
-	{
+	if (_findOutPhonesMode != 2) {
 		btSerial->println(BlueToothCommandsUtil::CommandConstructor("PIR status:" + String(_isPIRSensorActivated), BlueToothCommandsUtil::Data, F("005")));
 	}
 
-	if (_findOutPhonesMode != 0)
-	{
+	if (_findOutPhonesMode != 0) {
 		btSerial->println(BlueToothCommandsUtil::CommandConstructor("Addr:" + _deviceAddress, BlueToothCommandsUtil::Data, F("010")));
 
 		btSerial->println(BlueToothCommandsUtil::CommandConstructor("Name:" + _deviceName, BlueToothCommandsUtil::Data, F("011")));
@@ -775,27 +609,23 @@ void loadConfigurationMenu()
 
 }
 
-void blueToothConfigurationSystem()
-{
+void blueToothConfigurationSystem() {
 	LSG_EEpromRW* eepromRW = new LSG_EEpromRW();
 	String _bluetoothData = "";
-	if (btSerial->available())
-	{
+	if (btSerial->available()) {
 		_bluetoothData = btSerial->readString();
 		//BluetoothData.trim();
 
 		//ROOT: Main
 #pragma region Main Menu-#0
-		if (_bluetoothData.indexOf(F("#0")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("#0")) > -1) {
 			_timeToTurnOnAlarm = millis() + 300000;
 			loadMainMenu();
 		}
 
 #pragma region Commands
 
-		if (_bluetoothData.indexOf(F("C002")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("C002")) > -1) {
 			_isAlarmOn = true;
 			_isOnMotionDetect = false;
 			_timeToTurnOnAlarm = 0;
@@ -803,8 +633,7 @@ void blueToothConfigurationSystem()
 			loadMainMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("C003")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("C003")) > -1) {
 			_isAlarmOn = false;
 			loadMainMenu();
 		}
@@ -820,8 +649,7 @@ void blueToothConfigurationSystem()
 
 		//ROOT Main/Configuration
 #pragma region Configuration Menu-#M001
-		if (_bluetoothData.indexOf(F("M001")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("M001")) > -1) {
 			_timeToTurnOnAlarm = millis() + 300000;
 			loadConfigurationMenu();
 		}
@@ -831,34 +659,28 @@ void blueToothConfigurationSystem()
 
 
 #pragma region Data
-		if (_bluetoothData.indexOf(F("D001")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D001")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (isValidNumber(splitString)) {
 				splitString.toCharArray(_phoneNumber, BUFSIZEPHONENUMBER);
-				eepromRW->eeprom_write_string(1, _phoneNumber);
+				eepromRW->eeprom_write_string(_addressStartBufPhoneNumber, _phoneNumber);
 			}
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D094")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D094")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
-				splitString.toCharArray(_bufDelayFindMe, BUFSIZEDEVICEADDRESS);
+			if (isValidNumber(splitString)) {
+				splitString.toCharArray(_bufDelayFindMe, BUFSIZEDELAYFINDME);
 				eepromRW->eeprom_write_string(_addressDelayFindMe, _bufDelayFindMe);
 				_delayFindMe = atoi(&_bufDelayFindMe[0]);
 			}
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D095")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D095")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (isValidNumber(splitString)) {
 				splitString.toCharArray(_bufOffSetTemperature, BUFSIZEOFFSETTEMPERATURE);
 				eepromRW->eeprom_write_string(_addressOffSetTemperature, _bufOffSetTemperature);
 				_offSetTempValue = atoi(&_bufOffSetTemperature[0]);
@@ -876,11 +698,9 @@ void blueToothConfigurationSystem()
 		//	loadConfigurationMenu();
 		//}
 
-		if (_bluetoothData.indexOf(F("D098")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D098")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (isValidNumber(splitString)) {
 				splitString.toCharArray(_bufDbPhoneON, BUFSIZEDBPHONEON);
 				eepromRW->eeprom_write_string(_addressDBPhoneIsON, _bufDbPhoneON);
 				_phoneNumbers = atoi(&_bufDbPhoneON[0]);
@@ -888,18 +708,14 @@ void blueToothConfigurationSystem()
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D099")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D099")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
 
-			if (isValidNumber(splitString) || splitString == "#")
-			{
-				if (splitString == "#")
-				{
+			if (isValidNumber(splitString) || splitString == "#") {
+				if (splitString == "#") {
 					_phoneNumberAlternative[0] = '\0';
 				}
-				else
-				{
+				else {
 					splitString.toCharArray(_phoneNumberAlternative, BUFSIZEPHONENUMBERALTERANATIVE);
 				}
 				eepromRW->eeprom_write_string(_addressStartBufPhoneNumberAlternative, _phoneNumberAlternative);
@@ -907,35 +723,29 @@ void blueToothConfigurationSystem()
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D004")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D004")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (isValidNumber(splitString)) {
 				splitString.toCharArray(_bufTemperatureMax, BUFSIZETEMPERATUREMAX);
-				eepromRW->eeprom_write_string(16, _bufTemperatureMax);
+				eepromRW->eeprom_write_string(_addressStartBufTemperatureMax, _bufTemperatureMax);
 				_tempMax = atoi(_bufTemperatureMax);
 			}
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D005")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D005")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (isValidNumber(splitString)) {
 				splitString.toCharArray(_bufPirSensorIsON, BUFSIZEPIRSENSORISON);
-				eepromRW->eeprom_write_string(19, _bufPirSensorIsON);
+				eepromRW->eeprom_write_string(_addressStartBufPirSensorIsON, _bufPirSensorIsON);
 				_isPIRSensorActivated = atoi(&_bufPirSensorIsON[0]);
 			}
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D010")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D010")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (splitString.length() > 0 && splitString.length() < BUFSIZEDEVICEADDRESS) {
 				splitString.toCharArray(_bufDeviceAddress, BUFSIZEDEVICEADDRESS);
 				eepromRW->eeprom_write_string(_addressStartDeviceAddress, _bufDeviceAddress);
 				_deviceAddress = splitString;
@@ -943,11 +753,9 @@ void blueToothConfigurationSystem()
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D011")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D011")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (splitString.length() > 0 && splitString.length() < BUFSIZEDEVICENAME) {
 				splitString.toCharArray(_bufDeviceName, BUFSIZEDEVICENAME);
 				eepromRW->eeprom_write_string(_addressStartDeviceName, _bufDeviceName);
 				_deviceName = splitString;
@@ -955,11 +763,9 @@ void blueToothConfigurationSystem()
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D015")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D015")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (splitString.length() > 0 && splitString.length() < BUFSIZEDEVICEADDRESS) {
 				splitString.toCharArray(_bufDeviceAddress2, BUFSIZEDEVICEADDRESS);
 				eepromRW->eeprom_write_string(_addressStartDeviceAddress2, _bufDeviceAddress2);
 				_deviceAddress2 = splitString;
@@ -967,11 +773,9 @@ void blueToothConfigurationSystem()
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D016")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D016")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (splitString.length() > 0 && splitString.length() < BUFSIZEDEVICENAME) {
 				splitString.toCharArray(_bufDeviceName2, BUFSIZEDEVICENAME);
 				eepromRW->eeprom_write_string(_addressStartDeviceName2, _bufDeviceName2);
 				_deviceName2 = splitString;
@@ -979,24 +783,19 @@ void blueToothConfigurationSystem()
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D012")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D012")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (isValidNumber(splitString)) {
 				splitString.toCharArray(_bufFindOutPhonesON, BUFSIZEFINDOUTPHONESON);
 				eepromRW->eeprom_write_string(_addressStartFindOutPhonesON, _bufFindOutPhonesON);
 				_findOutPhonesMode = atoi(&_bufFindOutPhonesON[0]);
-				if (_findOutPhonesMode != 0)
-				{
+				if (_findOutPhonesMode != 0) {
 					_isBTSleepON = 0;
-					if (_findOutPhonesMode == 2)
-					{
+					if (_findOutPhonesMode == 2) {
 						_isPIRSensorActivated = 0;
 					}
 				}
-				else
-				{
+				else {
 					_isBTSleepON = 1;
 				}
 			}
@@ -1004,11 +803,9 @@ void blueToothConfigurationSystem()
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D013")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D013")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (isValidNumber(splitString)) {
 				splitString.toCharArray(_bufExternalInterruptIsON, BUFSIZEEXTERNALINTERRUPTISON);
 				eepromRW->eeprom_write_string(_addressExternalInterruptIsOn, _bufExternalInterruptIsON);
 				_isExternalInterruptOn = atoi(&_bufExternalInterruptIsON[0]);
@@ -1016,11 +813,9 @@ void blueToothConfigurationSystem()
 			loadConfigurationMenu();
 		}
 
-		if (_bluetoothData.indexOf(F("D014")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D014")) > -1) {
 			String splitString = splitStringIndex(_bluetoothData, ';', 1);
-			if (isValidNumber(splitString))
-			{
+			if (isValidNumber(splitString)) {
 				splitString.toCharArray(_bufBuzzerIsON, BUFSIZEBUZZERISON);
 				eepromRW->eeprom_write_string(_addressBuzzerIsOn, _bufBuzzerIsON);
 				_isBuzzerOn = atoi(&_bufBuzzerIsON[0]);
@@ -1034,23 +829,20 @@ void blueToothConfigurationSystem()
 
 
 #pragma region Security-M004
-		if (_bluetoothData.indexOf(F("M004")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("M004")) > -1) {
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Security"), BlueToothCommandsUtil::Title));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw.:"), BlueToothCommandsUtil::Menu, F("005")));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change name:"), BlueToothCommandsUtil::Menu, F("006")));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
 		}
 #pragma region Menu
-		if (_bluetoothData.indexOf(F("M005")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("M005")) > -1) {
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw."), BlueToothCommandsUtil::Title));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Insert old passw.:"), BlueToothCommandsUtil::Data, F("006")));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
 		}
 
-		if (_bluetoothData.indexOf(F("M006")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("M006")) > -1) {
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw."), BlueToothCommandsUtil::Title));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Insert name:"), BlueToothCommandsUtil::Data, F("007")));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
@@ -1063,18 +855,15 @@ void blueToothConfigurationSystem()
 #pragma endregion
 
 #pragma region Data
-		if (_bluetoothData.indexOf(F("D006")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D006")) > -1) {
 			String confirmedOldPassword = splitStringIndex(_bluetoothData, ';', 1);
 
-			if (_oldPassword == confirmedOldPassword)
-			{
+			if (_oldPassword == confirmedOldPassword) {
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw."), BlueToothCommandsUtil::Title));
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Insert new passw:"), BlueToothCommandsUtil::Data, F("008")));
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
 			}
-			else
-			{
+			else {
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw."), BlueToothCommandsUtil::Title));
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Wrong passw:"), BlueToothCommandsUtil::Message));
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
@@ -1082,18 +871,15 @@ void blueToothConfigurationSystem()
 
 		}
 
-		if (_bluetoothData.indexOf(F("D008")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D008")) > -1) {
 			_newPassword = splitStringIndex(_bluetoothData, ';', 1);
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw."), BlueToothCommandsUtil::Title));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Confirm pass:"), BlueToothCommandsUtil::Data, F("009")));
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
 		}
 
-		if (_bluetoothData.indexOf(F("D009")) > -1)
-		{
-			if (_newPassword == splitStringIndex(_bluetoothData, ';', 1))
-			{
+		if (_bluetoothData.indexOf(F("D009")) > -1) {
+			if (_newPassword == splitStringIndex(_bluetoothData, ';', 1)) {
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw."), BlueToothCommandsUtil::Title));
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("changed:"), BlueToothCommandsUtil::Message));
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
@@ -1102,8 +888,7 @@ void blueToothConfigurationSystem()
 				_oldPassword = _newPassword;
 			}
 
-			else
-			{
+			else {
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw."), BlueToothCommandsUtil::Title));
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("passw. doesn't match"), BlueToothCommandsUtil::Message));
 				btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
@@ -1112,8 +897,7 @@ void blueToothConfigurationSystem()
 		}
 
 
-		if (_bluetoothData.indexOf(F("D007")) > -1)
-		{
+		if (_bluetoothData.indexOf(F("D007")) > -1) {
 			String btName = splitStringIndex(_bluetoothData, ';', 1);
 
 			btSerial->println(BlueToothCommandsUtil::CommandConstructor(F("Change passw."), BlueToothCommandsUtil::Title));
@@ -1133,41 +917,31 @@ void blueToothConfigurationSystem()
 	delete(eepromRW);
 }
 
-boolean isValidNumber(String str)
-{
-	for (byte i = 0; i < str.length(); i++)
-	{
+boolean isValidNumber(String str) {
+	for (byte i = 0; i < str.length(); i++) {
 		if (isDigit(str.charAt(i))) return true;
 	}
 	return false;
 }
 
-void buzzerSensorActivity()
-{
-	for (uint8_t i = 0; i < 15; i++)
-	{
+void buzzerSensorActivity() {
+	for (uint8_t i = 0; i < 15; i++) {
 		tone(_pin_buzzer, 400, 500);
 		delay(1000);
 		noTone(_pin_buzzer);
 	}
 }
 
-void pirSensorActivity()
-{
+void pirSensorActivity() {
 	if (_isDisableCall) { return; }
-	if (_isPIRSensorActivated && _isAlarmOn)
-	{
-		if (digitalRead(_pin_pir))
-		{
+	if (_isPIRSensorActivated && _isAlarmOn) {
+		if (digitalRead(_pin_pir)) {
 			blinkLedHideMode();
 			_whatIsHappened = F("P");
 
-			if (_findOutPhonesMode == 1)
-			{
-				if (!_isDeviceDetected)
-				{
-					if (_isBuzzerOn)
-					{
+			if (_findOutPhonesMode == 1) {
+				if (!_isDeviceDetected) {
+					if (_isBuzzerOn) {
 						buzzerSensorActivity();
 					}
 					callSim900();
@@ -1175,10 +949,8 @@ void pirSensorActivity()
 					//reedRelaySensorActivity(_pin_reedRelay);
 				}
 			}
-			else
-			{
-				if (_isBuzzerOn)
-				{
+			else {
+				if (_isBuzzerOn) {
 					buzzerSensorActivity();
 				}
 				callSim900();
@@ -1188,18 +960,14 @@ void pirSensorActivity()
 	}
 }
 
-void reedRelaySensorActivity(uint8_t pin)
-{
+void reedRelaySensorActivity(uint8_t pin) {
 	pinMode(pin, OUTPUT);
 	blinkLedHideMode();
 }
 
-void internalTemperatureActivity()
-{
-	if (_delayForTemperature->IsDelayTimeFinished(true))
-	{
-		if ((uint8_t)getTemp() > _tempMax)
-		{
+void internalTemperatureActivity() {
+	if (_delayForTemperature->IsDelayTimeFinished(true)) {
+		if ((uint8_t)getTemp() > _tempMax) {
 
 			_whatIsHappened = F("T");
 			callSim900();
@@ -1207,23 +975,19 @@ void internalTemperatureActivity()
 	}
 }
 
-void voltageActivity()
-{
-	if (_delayForVoltage->IsDelayTimeFinished(true))
-	{
+void voltageActivity() {
+	if (_delayForVoltage->IsDelayTimeFinished(true)) {
 		_voltageValue = (5.10 / 1023.00) * analogRead(A1);
 		_voltageMinValue = 3.25;
 
-		if (_voltageValue < _voltageMinValue)
-		{
+		if (_voltageValue < _voltageMinValue) {
 			_whatIsHappened = F("V");
 			callSim900();
 		}
 	}
 }
 
-void readIncomingSMS()
-{
+void readIncomingSMS() {
 	//Inserita per scaricare buffer e agevolare arrivo sms.
 	mySim900->ReadIncomingChars2();
 
@@ -1232,16 +996,14 @@ void readIncomingSMS()
 	delay(100);
 	/**/
 
-	if (mySim900->IsAvailable() > 0)
-	{
+	if (mySim900->IsAvailable() > 0) {
 		String response = mySim900->ReadIncomingChars2();
 		delay(500);
 		response.trim();
-		//Serial.print(F("####")); Serial.print(response); Serial.println(F("####"));
+		DEBUG_SERIAL_PRINT(F("####")); DEBUG_SERIAL_PRINT(response); DEBUG_SERIAL_PRINTLN(F("####"));
 		//if (response.substring(0, 5) == F("+CMT:"))
 		//if (response.indexOf("+CMT:") != -1)
-		if (response.indexOf("+CMGL:") != -1)
-		{
+		if (response.indexOf("+CMGL:") != -1) {
 			blinkLedHideMode();
 			int position = 0;
 
@@ -1258,9 +1020,8 @@ void readIncomingSMS()
 			if (response.substring(position + 4, position + 14) != _phoneNumber &&
 				response.substring(position + 19, position + 29) != _phoneNumber &&
 				response.substring(position + 4, position + 14) != _phoneNumberAlternative &&
-				response.substring(position + 19, position + 29) != _phoneNumberAlternative)
-			{
-				//Serial.println("Numero errato");
+				response.substring(position + 19, position + 29) != _phoneNumberAlternative) {
+				DEBUG_SERIAL_PRINTLN(F("Numero errato"));
 				return;
 			}
 			int index = response.lastIndexOf('"');
@@ -1273,55 +1034,46 @@ void readIncomingSMS()
 	}
 }
 
-void listOfSmsCommands(String command)
-{
+void listOfSmsCommands(String command) {
 
 	//Enable incoming call.
-	if (command == F("P1"))
-	{
+	if (command == F("P1")) {
 		_phoneNumbers = 1;
 		callSim900();
 	}
 
-	if (command == F("P2"))
-	{
+	if (command == F("P2")) {
 		_phoneNumbers = 2;
 		callSim900();
 	}
 
 
 	//Enable incoming call.
-	if (command == F("Rc"))
-	{
+	if (command == F("Rc")) {
 		mySim900->enableIncomingCall(1);
 	}
 
-	if (command == F("Rs"))
-	{
+	if (command == F("Rs")) {
 		mySim900->disableIncomingCall();
 		callSim900();
 	}
 
 	//Disattiva chiamate
-	if (command == F("Dc"))
-	{
+	if (command == F("Dc")) {
 		_isDisableCall = true;
 	}
 	//Accende bluetooth
-	if (command == F("Ab"))
-	{
+	if (command == F("Ab")) {
 		turnOnBlueToothAndSetTurnOffTimer();
 		blinkLed(500, 3);
 	}
 	//Accende led
-	if (command == F("Al"))
-	{
+	if (command == F("Al")) {
 		_isBlueLedDisable = false;
-		blinkLed(500,3);
+		blinkLed(500, 3);
 	}
 	//Check system
-	if (command == F("Ck"))
-	{
+	if (command == F("Ck")) {
 		callSim900();
 	}
 	////Position enable.
@@ -1336,8 +1088,7 @@ void listOfSmsCommands(String command)
 	//}
 
 	//Attiva funzione non vedermi
-	if (command == F("Nv"))
-	{
+	if (command == F("Nv")) {
 		_findOutPhonesMode = 1;
 		_isBTSleepON = false;
 		_timeToTurnOnAlarm = 0;
@@ -1345,8 +1096,7 @@ void listOfSmsCommands(String command)
 		blinkLed(500, 3);
 	}
 	//Attiva External interrupt normalmente aperto
-	if (command == F("Eo"))
-	{
+	if (command == F("Eo")) {
 		_isBTSleepON = true;
 		_isPIRSensorActivated = 0;
 		_findOutPhonesMode = 0;
@@ -1357,13 +1107,11 @@ void listOfSmsCommands(String command)
 		_isExtenalInterruptNormalyClosed = false;
 	}
 	//Disattiva External interrupt
-	if (command == F("Ex"))
-	{
+	if (command == F("Ex")) {
 		_isExternalInterruptOn = 0;
 	}
 	//Attiva External interrupt normalmente chiuso
-	if (command == F("Ec"))
-	{
+	if (command == F("Ec")) {
 		_isBTSleepON = true;
 		_isPIRSensorActivated = 0;
 		_findOutPhonesMode = 0;
@@ -1375,8 +1123,7 @@ void listOfSmsCommands(String command)
 	}
 
 	//Attiva motion detect senza bluetooth
-	if (command == F("Md"))
-	{
+	if (command == F("Md")) {
 		_isBTSleepON = true;
 		_isPIRSensorActivated = 0;
 		_findOutPhonesMode = 0;
@@ -1386,26 +1133,23 @@ void listOfSmsCommands(String command)
 	}
 
 	//Attiva Buzzer
-	if (command == F("Bz"))
-	{
+	if (command == F("Bz")) {
 		_isBuzzerOn = 1;
-		blinkLed(500,3);
+		blinkLed(500, 3);
 	}
 
 	//Attiva pir sensor senza bluetooth
-	if (command == F("Wc"))
-	{
+	if (command == F("Wc")) {
 		_isBTSleepON = true;
 		_isPIRSensorActivated = 1;
 		_findOutPhonesMode = 0;
-	/*	_isBuzzerOn = 0;*/
+		/*	_isBuzzerOn = 0;*/
 		activateFunctionAlarm();
 		btSerial->turnOffBlueTooth();
 	}
 
 	//Find me
-	if (command == F("Fm"))
-	{
+	if (command == F("Fm")) {
 		_isBTSleepON = false;
 		_findOutPhonesMode = 2;
 		_isPIRSensorActivated = 0;
@@ -1414,8 +1158,7 @@ void listOfSmsCommands(String command)
 	}
 }
 
-void activateFunctionAlarm()
-{
+void activateFunctionAlarm() {
 	_timeToTurnOnAlarm = 0;
 	_isDisableCall = false;
 	_isAlarmOn = true;
@@ -1509,8 +1252,7 @@ void activateFunctionAlarm()
 //	}
 //}
 
-double getTemp(void)
-{
+double getTemp(void) {
 	unsigned int wADC;
 	double t;
 
@@ -1527,7 +1269,7 @@ double getTemp(void)
 
 	ADCSRA |= _BV(ADSC);  // Start the ADC
 
-						  // Detect end-of-conversion
+	// Detect end-of-conversion
 	while (bit_is_set(ADCSRA, ADSC));
 
 	// Reading register "ADCW" takes care of how to read ADCL and ADCH.

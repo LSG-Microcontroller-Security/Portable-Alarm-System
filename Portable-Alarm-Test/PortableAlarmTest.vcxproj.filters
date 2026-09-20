@@ -18,6 +18,9 @@
     <ClInclude Include="__vm\.PortableAlarmTest.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="__vm\.Portable-Alarm-Test.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Portable-Alarm-Test.ino" />

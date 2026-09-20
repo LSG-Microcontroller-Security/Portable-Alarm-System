@@ -10,17 +10,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Visual Micro\.BasicPortableAlarmSystem.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="__vm\.BasicPortableAlarmSystem.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="__vm\.PortableAlarm.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Portable-Alarm-System.ino" />
   </ItemGroup>
   <ItemGroup>
@@ -36,5 +25,10 @@
     <None Include="..\Eagle\PortableAlarmSystem2.brd">
       <Filter>Eagle</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

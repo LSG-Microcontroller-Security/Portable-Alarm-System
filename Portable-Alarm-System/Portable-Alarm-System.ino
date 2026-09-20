@@ -257,7 +257,6 @@ void turnOffBluetoohIfTimeIsOver() {
 		btSerial->turnOffBlueTooth();
 	}
 }
-
 //void turnOnBlueToothIfMotionIsDetected()
 //{
 //	if (_isOnMotionDetect
@@ -270,7 +269,6 @@ void turnOffBluetoohIfTimeIsOver() {
 //		turnOnBlueToothAndSetTurnOffTimer(false);
 //	}
 //}
-
 void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	if (_isDisableCall) { return; }
 	//todo:da mettere in altro luogo.
@@ -324,7 +322,6 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	//return _isDeviceDetected;
 	//}
 }
-
 void loop() {
 	readIncomingSMS();
 
@@ -383,7 +380,6 @@ void loop() {
 		blueToothConfigurationSystem();
 	}
 }
-
 void motionDetectActivity() {
 	if (_isDisableCall || _findOutPhonesMode == 2 || _isPIRSensorActivated) {
 		_isOnMotionDetect = false;
@@ -409,6 +405,7 @@ void motionDetectActivity() {
 		detachInterrupt(1);
 
 		_whatIsHappened = F("M");
+		DEBUG_SERIAL_PRINTLN(F("Motion detected"));
 
 		if (_findOutPhonesMode == 1) {
 			if (!_isDeviceDetected) {
@@ -447,13 +444,11 @@ void motionDetectActivity() {
 		_isOnExternalMotionDetect = false;
 	}
 }
-
 //void restartBlueTooth()
 //{
 //	Serial.readString();
 //	btSerial->ReceveMode();
 //}
-
 void turnOnBlueToothAndSetTurnOffTimer() {
 	Serial.flush();
 	btSerial->Reset_To_Slave_Mode();
@@ -466,7 +461,6 @@ void turnOnBlueToothAndSetTurnOffTimer() {
 	//	}
 	_isMasterMode = false;
 }
-
 void blinkLedHideMode() {
 	if (_isBlueLedDisable) { return; }
 	for (uint8_t i = 0; i < 3; i++) {
@@ -476,7 +470,6 @@ void blinkLedHideMode() {
 		delay(50);
 	}
 }
-
 void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
 	for (uint8_t i = 0; i < numberOfBlinks; i++) {
 		digitalWrite(_pin_powerLed, HIGH);
@@ -485,7 +478,6 @@ void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
 		delay(blinkDelay);
 	}
 }
-
 String splitStringIndex(String data, char separator, int index) {
 	int found = 0;
 	int strIndex[] = { 0, -1 };
@@ -500,7 +492,6 @@ String splitStringIndex(String data, char separator, int index) {
 	}
 	return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
-
 String calculateBatteryLevel(float batteryLevel)
 
 {
@@ -516,7 +507,6 @@ String calculateBatteryLevel(float batteryLevel)
 		return F("[||||]+");
 
 }
-
 void loadMainMenu() {
 	char* alarmStatus = new char[15];
 
@@ -567,7 +557,6 @@ void loadMainMenu() {
 	btSerial->Flush();
 
 }
-
 void loadConfigurationMenu() {
 	btSerial->println(BlueToothCommandsUtil::CommandConstructor("Configuration", BlueToothCommandsUtil::Title));
 
@@ -608,7 +597,6 @@ void loadConfigurationMenu() {
 	btSerial->println(BlueToothCommandsUtil::CommandConstructor(BlueToothCommandsUtil::EndTrasmission));
 
 }
-
 void blueToothConfigurationSystem() {
 	LSG_EEpromRW* eepromRW = new LSG_EEpromRW();
 	String _bluetoothData = "";
@@ -916,14 +904,12 @@ void blueToothConfigurationSystem() {
 	}
 	delete(eepromRW);
 }
-
 boolean isValidNumber(String str) {
 	for (byte i = 0; i < str.length(); i++) {
 		if (isDigit(str.charAt(i))) return true;
 	}
 	return false;
 }
-
 void buzzerSensorActivity() {
 	for (uint8_t i = 0; i < 15; i++) {
 		tone(_pin_buzzer, 400, 500);
@@ -931,14 +917,13 @@ void buzzerSensorActivity() {
 		noTone(_pin_buzzer);
 	}
 }
-
 void pirSensorActivity() {
 	if (_isDisableCall) { return; }
 	if (_isPIRSensorActivated && _isAlarmOn) {
 		if (digitalRead(_pin_pir)) {
 			blinkLedHideMode();
 			_whatIsHappened = F("P");
-
+			DEBUG_SERIAL_PRINTLN(F("pir sensor"));
 			if (_findOutPhonesMode == 1) {
 				if (!_isDeviceDetected) {
 					if (_isBuzzerOn) {
@@ -959,34 +944,30 @@ void pirSensorActivity() {
 		}
 	}
 }
-
 void reedRelaySensorActivity(uint8_t pin) {
 	pinMode(pin, OUTPUT);
 	blinkLedHideMode();
 }
-
 void internalTemperatureActivity() {
 	if (_delayForTemperature->IsDelayTimeFinished(true)) {
 		if ((uint8_t)getTemp() > _tempMax) {
-
 			_whatIsHappened = F("T");
+			DEBUG_SERIAL_PRINTLN(F("Temperature high."));
 			callSim900();
 		}
 	}
 }
-
 void voltageActivity() {
 	if (_delayForVoltage->IsDelayTimeFinished(true)) {
 		_voltageValue = (5.10 / 1023.00) * analogRead(A1);
 		_voltageMinValue = 3.25;
-
 		if (_voltageValue < _voltageMinValue) {
 			_whatIsHappened = F("V");
+			DEBUG_SERIAL_PRINTLN(F("Voltage low."));
 			callSim900();
 		}
 	}
 }
-
 void readIncomingSMS() {
 	//Inserita per scaricare buffer e agevolare arrivo sms.
 	mySim900->ReadIncomingChars2();
@@ -1033,7 +1014,6 @@ void readIncomingSMS() {
 		}
 	}
 }
-
 void listOfSmsCommands(String command) {
 
 	//Enable incoming call.
@@ -1157,14 +1137,12 @@ void listOfSmsCommands(String command) {
 		activateFunctionAlarm();
 	}
 }
-
 void activateFunctionAlarm() {
 	_timeToTurnOnAlarm = 0;
 	_isDisableCall = false;
 	_isAlarmOn = true;
 	callSim900();
 }
-
 //void getCoordinates()
 //{
 //	mySim900->ReadIncomingChars2();
@@ -1251,7 +1229,6 @@ void activateFunctionAlarm() {
 //
 //	}
 //}
-
 double getTemp(void) {
 	unsigned int wADC;
 	double t;
@@ -1281,7 +1258,6 @@ double getTemp(void) {
 	// The returned temperature is in degrees Celsius.
 	return (t);
 }
-
 //unsigned int offSetTempValue(double externalTemperature)
 //{
 //	unsigned int wADC;

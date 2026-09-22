@@ -18,6 +18,8 @@
 #include <MySim900.h>
 #include <ActivityManager.h>
 #include "BluetoothCommandUtil2.h"
+#include "BluetoothFrameWriter.h"
+#include "BluetoothFrameWriter.cpp"
 
 #if _DEBUG_FOR_SERIAL
 #define DEBUG_SERIAL_PRINT(...) do { Serial.print(__VA_ARGS__); } while (0)
@@ -45,11 +47,8 @@ MySim900 my_sim900(_pin_rxSIM900, _pin_txSIM900, false);
 HardwareSerialAdapter bluetooth_serial_adapter(Serial);
 AvrMicroRepository bluetooth_avr_repository(bluetooth_serial_adapter, mf::commons::commonsLayer::AnalogRefMode::DEFAULT_m, 5.0f);
 BlueToothRepository bluetooth_repository(bluetooth_avr_repository, 10, 6, 38400, 9600);
+BluetoothFrameWriter bluetooth_frame_writer(bluetooth_repository);
 
-void bluetooth_send_program_frame(PGM_P message, BluetoothCommandUtil2::CommandTypeA command_type, uint8_t command_code);
-void bluetooth_send_program_frame(PGM_P message, BluetoothCommandUtil2::CommandTypeB command_type);
-void bluetooth_send_program_frame(PGM_P message, BluetoothCommandUtil2::CommandTypeC command_type);
-void bluetooth_send_end();
 
 const byte _addressStartBufPhoneNumber = 1;
 const byte _addressStartBufPrecisionNumber = 12;
@@ -138,8 +137,8 @@ void setup() {
 	initilizeEEPromData();
 	if (_findOutPhonesMode != 0) {
 		_isBTSleepON = 0;
-		bluetooth_send_program_frame(PSTR("Find activated"), BluetoothCommandUtil2::Message);
-		bluetooth_send_end();
+		bluetooth_frame_writer.send_program_frame(PSTR("Find activated"), BluetoothCommandUtil2::Message);
+		bluetooth_frame_writer.send_end();
 	}
 	bluetooth_repository.turnOnBlueTooth();
 	_what_is_happened[0] = 'X';
@@ -462,93 +461,7 @@ void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
 		delay(blinkDelay);
 	}
 }
-const uint8_t bluetooth_frame_size = 64;
-void append_bluetooth_char(char* destination, uint8_t capacity, char value) {
-	uint8_t length = strlen(destination);
-	if (length + 1U < capacity) {
-		destination[length] = value;
-		destination[length + 1U] = '\0';
-	}
-}
-void append_bluetooth_text(char* destination, uint8_t capacity, const char* source) {
-	while (*source != '\0') {
-		append_bluetooth_char(destination, capacity, *source++);
-	}
-}
-void append_bluetooth_program_text(char* destination, uint8_t capacity, PGM_P source) {
-	char character = pgm_read_byte(source++);
-	while (character != '\0') {
-		append_bluetooth_char(destination, capacity, character);
-		character = pgm_read_byte(source++);
-	}
-}
-void append_bluetooth_uint(char* destination, uint8_t capacity, unsigned long value) {
-	char number[11] = {};
-	ultoa(value, number, 10);
-	append_bluetooth_text(destination, capacity, number);
-}
-void bluetooth_send_frame(const char* message, BluetoothCommandUtil2::CommandTypeC command_type) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_text(frame, sizeof(frame), message);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_program_frame(PGM_P message, BluetoothCommandUtil2::CommandTypeA command_type, uint8_t command_code) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_program_text(frame, sizeof(frame), message);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type, command_code);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_program_frame(PGM_P message, BluetoothCommandUtil2::CommandTypeB command_type) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_program_text(frame, sizeof(frame), message);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_program_frame(PGM_P message, BluetoothCommandUtil2::CommandTypeC command_type) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_program_text(frame, sizeof(frame), message);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_value_frame(PGM_P label, const char* value, BluetoothCommandUtil2::CommandTypeA command_type, uint8_t command_code) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_program_text(frame, sizeof(frame), label);
-	append_bluetooth_text(frame, sizeof(frame), value);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type, command_code);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_program_value_frame(PGM_P label, PGM_P value, BluetoothCommandUtil2::CommandTypeC command_type) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_program_text(frame, sizeof(frame), label);
-	append_bluetooth_program_text(frame, sizeof(frame), value);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_value_frame(PGM_P label, const char* value, BluetoothCommandUtil2::CommandTypeC command_type) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_program_text(frame, sizeof(frame), label);
-	append_bluetooth_text(frame, sizeof(frame), value);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_uint_frame(PGM_P label, unsigned long value, BluetoothCommandUtil2::CommandTypeA command_type, uint8_t command_code) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_program_text(frame, sizeof(frame), label);
-	append_bluetooth_uint(frame, sizeof(frame), value);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type, command_code);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_uint_frame(PGM_P label, unsigned long value, BluetoothCommandUtil2::CommandTypeC command_type) {
-	char frame[bluetooth_frame_size] = {};
-	append_bluetooth_program_text(frame, sizeof(frame), label);
-	append_bluetooth_uint(frame, sizeof(frame), value);
-	BluetoothCommandUtil2::append_command_type(frame, sizeof(frame), command_type);
-	bluetooth_repository.println(frame);
-}
-void bluetooth_send_end() {
-	bluetooth_send_program_frame(PSTR(""), BluetoothCommandUtil2::EndTrasmission);
-}
+const uint8_t bluetooth_receive_buffer_size = 64U;
 bool bluetooth_contains(const char* bluetooth_data, PGM_P command) {
 	return strstr_P(bluetooth_data, command) != nullptr;
 }
@@ -598,56 +511,56 @@ PGM_P calculate_battery_level(float battery_level) {
 	return PSTR("[||||]+");
 }
 void loadMainMenu() {
-	char title[30] = {};
-	append_bluetooth_program_text(title, sizeof(title), _isAlarmOn ? PSTR("Alarm ON") : PSTR("Alarm OFF"));
-	append_bluetooth_text(title, sizeof(title), version);
-	bluetooth_send_frame(title, BluetoothCommandUtil2::Title);
-	bluetooth_send_program_frame(PSTR("Configuration"), BluetoothCommandUtil2::Menu, 1U);
-	bluetooth_send_program_frame(PSTR("Security"), BluetoothCommandUtil2::Menu, 4U);
-	bluetooth_send_program_frame(_isAlarmOn ? PSTR("Alarm OFF") : PSTR("Alarm On"), BluetoothCommandUtil2::Command, _isAlarmOn ? 3U : 2U);
-	bluetooth_send_uint_frame(PSTR("Temp.:"), getTemp(), BluetoothCommandUtil2::Info);
-	bluetooth_send_program_value_frame(PSTR("Batt.level:"), calculate_battery_level(_voltageValue), BluetoothCommandUtil2::Info);
-	bluetooth_send_value_frame(PSTR("WhatzUp:"), _what_is_happened, BluetoothCommandUtil2::Info);
-	bluetooth_send_end();
+	bluetooth_frame_writer.send_value_frame(
+		_isAlarmOn ? PSTR("Alarm ON") : PSTR("Alarm OFF"),
+		version,
+		BluetoothCommandUtil2::Title);
+	bluetooth_frame_writer.send_program_frame(PSTR("Configuration"), BluetoothCommandUtil2::Menu, 1U);
+	bluetooth_frame_writer.send_program_frame(PSTR("Security"), BluetoothCommandUtil2::Menu, 4U);
+	bluetooth_frame_writer.send_program_frame(_isAlarmOn ? PSTR("Alarm OFF") : PSTR("Alarm On"), BluetoothCommandUtil2::Command, _isAlarmOn ? 3U : 2U);
+	bluetooth_frame_writer.send_uint_frame(PSTR("Temp.:"), getTemp(), BluetoothCommandUtil2::Info);
+	bluetooth_frame_writer.send_program_value_frame(PSTR("Batt.level:"), calculate_battery_level(_voltageValue), BluetoothCommandUtil2::Info);
+	bluetooth_frame_writer.send_value_frame(PSTR("WhatzUp:"), _what_is_happened, BluetoothCommandUtil2::Info);
+	bluetooth_frame_writer.send_end();
 	bluetooth_repository.flush();
 }
 void loadConfigurationMenu() {
-	bluetooth_send_program_frame(PSTR("Configuration"), BluetoothCommandUtil2::Title);
-	bluetooth_send_value_frame(PSTR("Phone:"), _phoneNumber, BluetoothCommandUtil2::Data, 1U);
-	bluetooth_send_value_frame(PSTR("Ph.Altern.:"), _phoneNumberAlternative, BluetoothCommandUtil2::Data, 99U);
-	bluetooth_send_uint_frame(PSTR("N.Phone:"), _phoneNumbers, BluetoothCommandUtil2::Data, 98U);
-	bluetooth_send_uint_frame(PSTR("TempMax:"), _tempMax, BluetoothCommandUtil2::Data, 4U);
-	bluetooth_send_uint_frame(PSTR("OffSetTemp:"), _offSetTempValue, BluetoothCommandUtil2::Data, 95U);
+	bluetooth_frame_writer.send_program_frame(PSTR("Configuration"), BluetoothCommandUtil2::Title);
+	bluetooth_frame_writer.send_value_frame(PSTR("Phone:"), _phoneNumber, BluetoothCommandUtil2::Data, 1U);
+	bluetooth_frame_writer.send_value_frame(PSTR("Ph.Altern.:"), _phoneNumberAlternative, BluetoothCommandUtil2::Data, 99U);
+	bluetooth_frame_writer.send_uint_frame(PSTR("N.Phone:"), _phoneNumbers, BluetoothCommandUtil2::Data, 98U);
+	bluetooth_frame_writer.send_uint_frame(PSTR("TempMax:"), _tempMax, BluetoothCommandUtil2::Data, 4U);
+	bluetooth_frame_writer.send_uint_frame(PSTR("OffSetTemp:"), _offSetTempValue, BluetoothCommandUtil2::Data, 95U);
 
 	if (_findOutPhonesMode != 2U) {
-		bluetooth_send_uint_frame(PSTR("PIR status:"), _isPIRSensorActivated, BluetoothCommandUtil2::Data, 5U);
+		bluetooth_frame_writer.send_uint_frame(PSTR("PIR status:"), _isPIRSensorActivated, BluetoothCommandUtil2::Data, 5U);
 	}
 
 	if (_findOutPhonesMode != 0U) {
-		bluetooth_send_value_frame(PSTR("Addr:"), _bufDeviceAddress, BluetoothCommandUtil2::Data, 10U);
-		bluetooth_send_value_frame(PSTR("Name:"), _bufDeviceName, BluetoothCommandUtil2::Data, 11U);
-		bluetooth_send_value_frame(PSTR("Addr2:"), _bufDeviceAddress2, BluetoothCommandUtil2::Data, 15U);
-		bluetooth_send_value_frame(PSTR("Name2:"), _bufDeviceName2, BluetoothCommandUtil2::Data, 16U);
-		bluetooth_send_uint_frame(PSTR("FindLoop:"), _delayFindMe, BluetoothCommandUtil2::Data, 94U);
+		bluetooth_frame_writer.send_value_frame(PSTR("Addr:"), _bufDeviceAddress, BluetoothCommandUtil2::Data, 10U);
+		bluetooth_frame_writer.send_value_frame(PSTR("Name:"), _bufDeviceName, BluetoothCommandUtil2::Data, 11U);
+		bluetooth_frame_writer.send_value_frame(PSTR("Addr2:"), _bufDeviceAddress2, BluetoothCommandUtil2::Data, 15U);
+		bluetooth_frame_writer.send_value_frame(PSTR("Name2:"), _bufDeviceName2, BluetoothCommandUtil2::Data, 16U);
+		bluetooth_frame_writer.send_uint_frame(PSTR("FindLoop:"), _delayFindMe, BluetoothCommandUtil2::Data, 94U);
 	}
 
-	bluetooth_send_uint_frame(PSTR("FindMode:"), _findOutPhonesMode, BluetoothCommandUtil2::Data, 12U);
-	bluetooth_send_uint_frame(PSTR("Ext.Int:"), _isExternalInterruptOn, BluetoothCommandUtil2::Data, 13U);
-	bluetooth_send_uint_frame(PSTR("Buzz.:"), _isBuzzerOn, BluetoothCommandUtil2::Data, 14U);
-	bluetooth_send_end();
+	bluetooth_frame_writer.send_uint_frame(PSTR("FindMode:"), _findOutPhonesMode, BluetoothCommandUtil2::Data, 12U);
+	bluetooth_frame_writer.send_uint_frame(PSTR("Ext.Int:"), _isExternalInterruptOn, BluetoothCommandUtil2::Data, 13U);
+	bluetooth_frame_writer.send_uint_frame(PSTR("Buzz.:"), _isBuzzerOn, BluetoothCommandUtil2::Data, 14U);
+	bluetooth_frame_writer.send_end();
 }
 void loadSecurityMenu() {
-	bluetooth_send_program_frame(PSTR("Security"), BluetoothCommandUtil2::Title);
-	bluetooth_send_program_frame(PSTR("Change passw.:"), BluetoothCommandUtil2::Menu, 5U);
-	bluetooth_send_program_frame(PSTR("Change name:"), BluetoothCommandUtil2::Menu, 6U);
-	bluetooth_send_end();
+	bluetooth_frame_writer.send_program_frame(PSTR("Security"), BluetoothCommandUtil2::Title);
+	bluetooth_frame_writer.send_program_frame(PSTR("Change passw.:"), BluetoothCommandUtil2::Menu, 5U);
+	bluetooth_frame_writer.send_program_frame(PSTR("Change name:"), BluetoothCommandUtil2::Menu, 6U);
+	bluetooth_frame_writer.send_end();
 }
 void blueToothConfigurationSystem() {
 	if (!bluetooth_repository.available()) {
 		return;
 	}
 
-	char bluetooth_data[bluetooth_frame_size] = {};
+	char bluetooth_data[bluetooth_receive_buffer_size] = {};
 	char value[BUFSIZEDEVICEADDRESS] = {};
 	LSG_EEpromRW eeprom_rw;
 	if (bluetooth_repository.readString(bluetooth_data, sizeof(bluetooth_data)) == 0U) {
@@ -779,56 +692,56 @@ void blueToothConfigurationSystem() {
 		loadSecurityMenu();
 	}
 	else if (bluetooth_contains(bluetooth_data, PSTR("M005"))) {
-		bluetooth_send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
-		bluetooth_send_program_frame(PSTR("Insert old passw.:"), BluetoothCommandUtil2::Data, 6U);
-		bluetooth_send_end();
+		bluetooth_frame_writer.send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
+		bluetooth_frame_writer.send_program_frame(PSTR("Insert old passw.:"), BluetoothCommandUtil2::Data, 6U);
+		bluetooth_frame_writer.send_end();
 	}
 	else if (bluetooth_contains(bluetooth_data, PSTR("M006"))) {
-		bluetooth_send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
-		bluetooth_send_program_frame(PSTR("Insert name:"), BluetoothCommandUtil2::Data, 7U);
-		bluetooth_send_end();
+		bluetooth_frame_writer.send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
+		bluetooth_frame_writer.send_program_frame(PSTR("Insert name:"), BluetoothCommandUtil2::Data, 7U);
+		bluetooth_frame_writer.send_end();
 	}
 	else if (bluetooth_contains(bluetooth_data, PSTR("D006"))) {
 		if (bluetooth_read_value(bluetooth_data, value, sizeof(value)) && strcmp(_old_password, value) == 0) {
-			bluetooth_send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
-			bluetooth_send_program_frame(PSTR("Insert new passw:"), BluetoothCommandUtil2::Data, 8U);
-			bluetooth_send_end();
+			bluetooth_frame_writer.send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
+			bluetooth_frame_writer.send_program_frame(PSTR("Insert new passw:"), BluetoothCommandUtil2::Data, 8U);
+			bluetooth_frame_writer.send_end();
 		}
 		else {
-			bluetooth_send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
-			bluetooth_send_program_frame(PSTR("Wrong passw:"), BluetoothCommandUtil2::Message);
-			bluetooth_send_end();
+			bluetooth_frame_writer.send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
+			bluetooth_frame_writer.send_program_frame(PSTR("Wrong passw:"), BluetoothCommandUtil2::Message);
+			bluetooth_frame_writer.send_end();
 		}
 	}
 	else if (bluetooth_contains(bluetooth_data, PSTR("D008"))) {
 		if (bluetooth_read_value(bluetooth_data, value, sizeof(value)) && copy_bluetooth_value(_new_password, sizeof(_new_password), value)) {
-			bluetooth_send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
-			bluetooth_send_program_frame(PSTR("Confirm pass:"), BluetoothCommandUtil2::Data, 9U);
-			bluetooth_send_end();
+			bluetooth_frame_writer.send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
+			bluetooth_frame_writer.send_program_frame(PSTR("Confirm pass:"), BluetoothCommandUtil2::Data, 9U);
+			bluetooth_frame_writer.send_end();
 		}
 	}
 	else if (bluetooth_contains(bluetooth_data, PSTR("D009"))) {
 		if (bluetooth_read_value(bluetooth_data, value, sizeof(value)) && strcmp(_new_password, value) == 0) {
-			bluetooth_send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
-			bluetooth_send_program_frame(PSTR("changed:"), BluetoothCommandUtil2::Message);
-			bluetooth_send_end();
+			bluetooth_frame_writer.send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
+			bluetooth_frame_writer.send_program_frame(PSTR("changed:"), BluetoothCommandUtil2::Message);
+			bluetooth_frame_writer.send_end();
 			delay(2000);
 			bluetooth_repository.set_password(_new_password);
 			bluetooth_repository.set_to_slave_mode();
 			memcpy(_old_password, _new_password, sizeof(_old_password));
 		}
 		else {
-			bluetooth_send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
-			bluetooth_send_program_frame(PSTR("passw. doesn't match"), BluetoothCommandUtil2::Message);
-			bluetooth_send_end();
+			bluetooth_frame_writer.send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
+			bluetooth_frame_writer.send_program_frame(PSTR("passw. doesn't match"), BluetoothCommandUtil2::Message);
+			bluetooth_frame_writer.send_end();
 			bluetooth_repository.println("D006");
 		}
 	}
 	else if (bluetooth_contains(bluetooth_data, PSTR("D007"))) {
 		if (bluetooth_read_value(bluetooth_data, value, sizeof(value))) {
-			bluetooth_send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
-			bluetooth_send_program_frame(PSTR("changed:"), BluetoothCommandUtil2::Message);
-			bluetooth_send_end();
+			bluetooth_frame_writer.send_program_frame(PSTR("Change passw."), BluetoothCommandUtil2::Title);
+			bluetooth_frame_writer.send_program_frame(PSTR("changed:"), BluetoothCommandUtil2::Message);
+			bluetooth_frame_writer.send_end();
 			delay(2000);
 			bluetooth_repository.set_name(value);
 			bluetooth_repository.set_to_slave_mode();

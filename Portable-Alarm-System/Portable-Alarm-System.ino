@@ -29,14 +29,12 @@
 #define DEBUG_SERIAL_PRINT(...) do { } while (0)
 #define DEBUG_SERIAL_PRINTLN(...) do { } while (0)
 #endif
-
 char version[15] = "S001 7.86-RTM";
 //Library version : 6.55-RTM
 ActivityManager _delay_for_temperature(60);
 ActivityManager _delay_for_voltage(60);
 char _old_password[5] = {};
 char _new_password[5] = {};
-
 #pragma region pinsDefinition
 const byte _pin_powerLed = 13;
 const uint8_t _pin_pir = A5;
@@ -48,12 +46,10 @@ SoftwareSerial sim_serial(_pin_rxSIM900, _pin_txSIM900, false);
 SoftwareSerialAdapter sim_serial_adapter(sim_serial);
 SimRepository sim_repository(sim_serial_adapter);
 #pragma endregion pinsDefinition
-
 HardwareSerialAdapter bluetooth_serial_adapter(Serial);
 AvrMicroRepository bluetooth_avr_repository(bluetooth_serial_adapter, mf::commons::commonsLayer::AnalogRefMode::DEFAULT_m, 5.0f);
 BlueToothRepository bluetooth_repository(bluetooth_avr_repository, 10, 6, 38400, 9600);
 BluetoothFrameWriter bluetooth_frame_writer(bluetooth_repository);
-
 const byte _addressStartBufPhoneNumber = 1;
 const byte _addressStartBufPrecisionNumber = 12;
 const byte _addressStartBufTemperatureIsOn = 14;

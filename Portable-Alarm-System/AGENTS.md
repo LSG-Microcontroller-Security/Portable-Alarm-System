@@ -5,7 +5,8 @@
 - Minimize Flash and SRAM usage.
 - Avoid unnecessary abstractions, objects, buffers, or helper layers.
 - Do not rename existing files, classes, methods, or public interfaces unless explicitly requested.
-
+- Do not rename existing files, classes, methods, or public interfaces unless explicitly requested.
+- 
 ## Memory
 - Avoid Arduino String in new code.
 - Avoid dynamic allocation unless strictly necessary.

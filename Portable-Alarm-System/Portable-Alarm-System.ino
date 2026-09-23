@@ -31,7 +31,6 @@ char version[15] = "S001 7.86-RTM";
 //Library version : 6.55-RTM
 ActivityManager _delay_for_temperature(60);
 ActivityManager _delay_for_voltage(60);
-
 char _old_password[5] = {};
 char _new_password[5] = {};
 #pragma region pinsDefinition

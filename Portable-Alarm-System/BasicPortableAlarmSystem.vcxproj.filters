@@ -14,6 +14,12 @@
     <Filter Include="src">
       <UniqueIdentifier>{db4fb0da-6c4f-4064-a172-445e7028e9d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="documents">
+      <UniqueIdentifier>{59c49bba-bde6-43e8-a579-883737246f67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="documents\images">
+      <UniqueIdentifier>{163dcffb-fd64-4cbe-9ba6-893c20713499}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Portable-Alarm-System.ino" />
@@ -37,6 +43,7 @@
     <None Include="..\Eagle\PortableAlarmSystem2.brd">
       <Filter>Eagle</Filter>
     </None>
+    <None Include="AGENTS.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h">
@@ -54,5 +61,16 @@
     <ClInclude Include="BluetoothFrameWriter.h">
       <Filter>src</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\SitoPortable\photo usate\IMG_20190405_110031.jpg">
+      <Filter>documents\images</Filter>
+    </Image>
+    <Image Include="..\SitoPortable\photo usate\portable1.png">
+      <Filter>documents\images</Filter>
+    </Image>
+    <Image Include="..\SitoPortable\photo usate\terza.png">
+      <Filter>documents\images</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -4,6 +4,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifndef _DEBUG_FOR_SERIAL
+#define _DEBUG_FOR_SERIAL 0U
+#endif
+
 #define AT_SMS_HEADER                "+CMGR:"
 #define AT_SET_SMS_TEXT_MODE         "AT+CMGF=1"
 #define AT_SET_SMS_PDU_MODE          "AT+CMGF=0"
@@ -71,13 +75,18 @@ namespace {
 	}
 }
 
+SimRepository::SimRepository(ISerial& serial)
+	: serial_(serial), sleep_pin_(sim_pin_not_configured), boot_pin_(sim_pin_not_configured), is_sms_receive_initialized_(false), is_call_disabled_(false) {
+}
+
 SimRepository::SimRepository(ISerial& serial, unsigned long baud_rate)
-	: SimRepository(serial, sim_pin_not_configured, baud_rate, sim_pin_not_configured) {
+	: SimRepository(serial) {
+	begin(baud_rate);
 }
 
 SimRepository::SimRepository(ISerial& serial, uint8_t sleep_pin, unsigned long baud_rate, uint8_t boot_pin)
 	: serial_(serial), sleep_pin_(sleep_pin), boot_pin_(boot_pin), is_sms_receive_initialized_(false), is_call_disabled_(false) {
-	serial_.begin(baud_rate);
+	begin(baud_rate);
 	if (sleep_pin_ != sim_pin_not_configured) {
 		pinMode(sleep_pin_, OUTPUT);
 		digitalWrite(sleep_pin_, LOW);
@@ -86,6 +95,10 @@ SimRepository::SimRepository(ISerial& serial, uint8_t sleep_pin, unsigned long b
 		digitalWrite(boot_pin_, LOW);
 		pinMode(boot_pin_, INPUT);
 	}
+}
+
+void SimRepository::begin(unsigned long baud_rate) {
+	serial_.begin(baud_rate);
 }
 
 void SimRepository::call(const char* number) {

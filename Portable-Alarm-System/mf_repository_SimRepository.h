@@ -3,15 +3,20 @@
 
 #include <stdint.h>
 #include <mf_repository_ISerial.h>
-#include <mf_commons_commonsLayer.h>
+
+#ifndef _ON_MOCKING_TESTS
+#define _ON_MOCKING_TESTS 0U
+#endif
 
 class SimRepository {
 public:
+    explicit SimRepository(ISerial& serial);
     SimRepository(ISerial& serial, unsigned long baud_rate);
     SimRepository(ISerial& serial, uint8_t sleep_pin, unsigned long baud_rate, uint8_t boot_pin = 255U);
 
 #if _ON_MOCKING_TESTS
     virtual ~SimRepository() = default;
+    virtual void begin(unsigned long baud_rate);
     virtual void call(const char* number);
     virtual void hangUp();
     virtual void enableIncomingCall(uint8_t number_of_rings);
@@ -41,6 +46,7 @@ public:
     virtual void delay(unsigned long ms);
 #else
     ~SimRepository() = default;
+    void begin(unsigned long baud_rate);
     void call(const char* number);
     void hangUp();
     void enableIncomingCall(uint8_t number_of_rings);
@@ -79,7 +85,6 @@ private:
     ISerial& serial_;
     uint8_t sleep_pin_;
     uint8_t boot_pin_;
-    unsigned long baud_rate_;
     bool is_sms_receive_initialized_;
     bool is_call_disabled_;
 };

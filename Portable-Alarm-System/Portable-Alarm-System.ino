@@ -10,15 +10,18 @@
 //#include <pgmStrToRAM.h>
 #include <mf_commons_commonsLayer.h>
 #include <mf_adapter_HardwareSerialAdapter.h>
+#include <mf_adapter_SoftwareSerialAdapter.h>
 #include <mf_repository_AvrMicroRepository.h>
 #include <mf_repository_BlueToothRepository.h>
 #include <LSGEEpromRW.h>
 #include <EEPROM.h>
+#include <SoftwareSerial.h>
 #include <MySim900.h>
 #include <ActivityManager.h>
 #include "BluetoothCommandUtil.h"
 #include "BluetoothFrameWriter.h"
 #include "BluetoothDynamicMenu.h"
+#include "mf_repository_SimRepository.h"
 
 #if _DEBUG_FOR_SERIAL
 #define DEBUG_SERIAL_PRINT(...) do { Serial.print(__VA_ARGS__); } while (0)
@@ -41,6 +44,9 @@ const byte _pin_rxSIM900 = 7;
 const byte _pin_txSIM900 = 8;
 const byte _pin_reedRelay = A4;
 MySim900 my_sim900(_pin_rxSIM900, _pin_txSIM900, false);
+SoftwareSerial sim_serial(_pin_rxSIM900, _pin_txSIM900, false);
+SoftwareSerialAdapter sim_serial_adapter(sim_serial);
+SimRepository sim_repository(sim_serial_adapter);
 #pragma endregion pinsDefinition
 HardwareSerialAdapter bluetooth_serial_adapter(Serial);
 AvrMicroRepository bluetooth_avr_repository(bluetooth_serial_adapter, mf::commons::commonsLayer::AnalogRefMode::DEFAULT_m, 5.0f);

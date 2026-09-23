@@ -200,6 +200,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Documents\Portable volantino.docx" />
     <None Include="..\Eagle\ChargeStepUpBoard.brd" />
     <None Include="..\Eagle\ChargeStepUpBoard2.brd" />
     <None Include="..\Eagle\PortableAlarmSystem.brd" />

@@ -12,7 +12,6 @@ inline char bluetooth_program_read_char(BluetoothProgramText source) {
 inline const char* bluetooth_find_program_text( const char* text,BluetoothProgramText pattern) {
     return strstr_P(text, pattern);
 }
-
 inline unsigned long bluetooth_millis() {
     return millis();
 }

@@ -44,6 +44,9 @@
       <Filter>Eagle</Filter>
     </None>
     <None Include="AGENTS.md" />
+    <None Include="..\Documents\Portable volantino.docx">
+      <Filter>documents</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h">

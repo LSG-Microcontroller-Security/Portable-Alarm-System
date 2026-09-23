@@ -16,7 +16,6 @@
 #include <LSGEEpromRW.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
-#include <MySim900.h>
 #include <ActivityManager.h>
 #include "BluetoothCommandUtil.h"
 #include "BluetoothFrameWriter.h"
@@ -45,7 +44,6 @@ const uint8_t _pin_buzzer = 5;
 const byte _pin_rxSIM900 = 7;
 const byte _pin_txSIM900 = 8;
 const byte _pin_reedRelay = A4;
-MySim900 my_sim900(_pin_rxSIM900, _pin_txSIM900, false);
 SoftwareSerial sim_serial(_pin_rxSIM900, _pin_txSIM900, false);
 SoftwareSerialAdapter sim_serial_adapter(sim_serial);
 SimRepository sim_repository(sim_serial_adapter);

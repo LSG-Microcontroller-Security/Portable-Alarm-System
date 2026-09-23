@@ -125,8 +125,7 @@ char _bufExternalInterruptIsON[BUFSIZEEXTERNALINTERRUPTISON];
 const int BUFSIZEBUZZERISON = 2;
 char _bufBuzzerIsON[BUFSIZEBUZZERISON];
 void setup() {
-	my_sim900.Begin(19200);
-	my_sim900.IsCallDisabled(false);
+	sim_repository.begin(19200);
 	inizializePins();
 	inizializeInterrupts();
 	bluetooth_repository.set_to_slave_mode();
@@ -144,30 +143,9 @@ void setup() {
 	}
 	bluetooth_repository.turnOnBlueTooth();
 	_what_is_happened[0] = 'X';
-	my_sim900.ATCommand("AT+CNETLIGHT=0");
-	delay(500);
-	my_sim900.ATCommand("AT+CPMS=\"SM\"");
-	delay(500);
-	/*if (my_sim900.IsAvailable() > 0)
-	{
-		String s = my_sim900.ReadIncomingChars2();
-		Serial.println(s);
-	}*/
-	my_sim900.ATCommand("AT+CMGF=1");
-	delay(500);
-	/*delay(5000);
-	if (my_sim900.IsAvailable() > 0)
-	{
-		String s = my_sim900.ReadIncomingChars2();
-		Serial.println(s);
-	}*/
-	my_sim900.ATCommand("AT+CMGD=1,4");
-	/*if (my_sim900.IsAvailable() > 0)
-	{
-		String s = my_sim900.ReadIncomingChars2();
-		Serial.println(s);
-	}*/
-	delay(1000);
+	sim_repository.setNetlightEnabled(false);
+	sim_repository.initSmsReception();
+	sim_repository.deleteAllSms();
 	my_sim900.ATCommand("AT+CBAND=""EGSM_PCS_MODE""");
 	delay(1000);
 	if (my_sim900.IsAvailable() > 0) {

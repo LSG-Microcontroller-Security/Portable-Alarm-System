@@ -540,78 +540,49 @@ void motionDetectActivity() {
 					DEBUG_SERIAL_PRINTLN(F("Numero errato"));
 					continue;
 				}
-				listOfSmsCommands(String(message));
+				listOfSmsCommands(message);
 				break;
 			}
 		}
 
-		void listOfSmsCommands(String command) {
-			//Enable incoming call.
-			if (command == F("P1")) {
+		void listOfSmsCommands(const char* command) {
+			if (command[0] == 'P' && command[1] == '1') {
 				_phoneNumbers = 1;
 				callSim900();
 			}
-
-			if (command == F("P2")) {
+			if (command[0] == 'P' && command[1] == '2') {
 				_phoneNumbers = 2;
 				callSim900();
 			}
-
-			//Enable incoming call.
-			if (command == F("Rc")) {
+			if (command[0] == 'R' && command[1] == 'c') {
 				sim_repository.enableIncomingCall(1);
 			}
-
-			if (command == F("Rs")) {
+			if (command[0] == 'R' && command[1] == 's') {
 				sim_repository.disableIncomingCall();
 				callSim900();
 			}
-
-			//Disattiva chiamate
-			if (command == F("Dc")) {
+			if (command[0] == 'D' && command[1] == 'c') {
 				_isDisableCall = true;
 			}
-
-			//Accende bluetooth
-			if (command == F("Ab")) {
+			if (command[0] == 'A' && command[1] == 'b') {
 				turnOnBlueToothAndSetTurnOffTimer();
 				blinkLed(500, 3);
 			}
-
-			//Accende led
-			if (command == F("Al")) {
+			if (command[0] == 'A' && command[1] == 'l') {
 				_isBlueLedDisable = false;
 				blinkLed(500, 3);
 			}
-
-			//Check system
-			if (command == F("Ck")) {
+			if (command[0] == 'C' && command[1] == 'k') {
 				callSim900();
 			}
-
-			////Position enable.
-			//if (command == F("Pe"))
-			//{
-			//	_isPositionEnable = true;
-			//}
-
-			////Position disable.
-			//if (command == F("Pd"))
-			//{
-			//	_isPositionEnable = false;
-			//}
-
-			//Attiva funzione non vedermi
-			if (command == F("Nv")) {
+			if (command[0] == 'N' && command[1] == 'v') {
 				_findOutPhonesMode = 1;
 				_isBTSleepON = false;
 				_timeToTurnOnAlarm = 0;
 				findOutPhonesONAndSetBluetoothInMasterModeActivity();
 				blinkLed(500, 3);
 			}
-
-			//Attiva External interrupt normalmente aperto
-			if (command == F("Eo")) {
+			if (command[0] == 'E' && command[1] == 'o') {
 				_isBTSleepON = true;
 				_isPIRSensorActivated = 0;
 				_findOutPhonesMode = 0;
@@ -621,14 +592,10 @@ void motionDetectActivity() {
 				bluetooth_repository.turnOffBlueTooth();
 				_isExtenalInterruptNormalyClosed = false;
 			}
-
-			//Disattiva External interrupt
-			if (command == F("Ex")) {
+			if (command[0] == 'E' && command[1] == 'x') {
 				_isExternalInterruptOn = 0;
 			}
-
-			//Attiva External interrupt normalmente chiuso
-			if (command == F("Ec")) {
+			if (command[0] == 'E' && command[1] == 'c') {
 				_isBTSleepON = true;
 				_isPIRSensorActivated = 0;
 				_findOutPhonesMode = 0;
@@ -638,9 +605,7 @@ void motionDetectActivity() {
 				bluetooth_repository.turnOffBlueTooth();
 				_isExtenalInterruptNormalyClosed = true;
 			}
-
-			//Attiva motion detect senza bluetooth
-			if (command == F("Md")) {
+			if (command[0] == 'M' && command[1] == 'd') {
 				_isBTSleepON = true;
 				_isPIRSensorActivated = 0;
 				_findOutPhonesMode = 0;
@@ -648,15 +613,11 @@ void motionDetectActivity() {
 				activateFunctionAlarm();
 				bluetooth_repository.turnOffBlueTooth();
 			}
-
-			//Attiva Buzzer
-			if (command == F("Bz")) {
+			if (command[0] == 'B' && command[1] == 'z') {
 				_isBuzzerOn = 1;
 				blinkLed(500, 3);
 			}
-
-			//Attiva pir sensor senza bluetooth
-			if (command == F("Wc")) {
+			if (command[0] == 'W' && command[1] == 'c') {
 				_isBTSleepON = true;
 				_isPIRSensorActivated = 1;
 				_findOutPhonesMode = 0;
@@ -664,9 +625,7 @@ void motionDetectActivity() {
 				activateFunctionAlarm();
 				bluetooth_repository.turnOffBlueTooth();
 			}
-
-			//Find me
-			if (command == F("Fm")) {
+			if (command[0] == 'F' && command[1] == 'm') {
 				_isBTSleepON = false;
 				_findOutPhonesMode = 2;
 				_isPIRSensorActivated = 0;

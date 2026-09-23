@@ -202,7 +202,7 @@ void callSim900() {
 }
 
 void motionTiltExternalInterrupt() {
-	if (_isExternalInterruptOn /*&& !_isPIRSensorActivated*/) {
+	if ((_isExternalInterruptOn & 0x01U) != 0U /*&& !_isPIRSensorActivated*/) {
 		_isOnExternalMotionDetect = true;
 	}
 }
@@ -248,10 +248,16 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 		}*/
 
 	if (_isMasterMode == false) {
-		bluetooth_repository.set_to_master_mode_v2();
+		if (_findOutPhonesMode == 1) {
+			bluetooth_repository.set_to_master_mode();
+		}
+		else {
+			bluetooth_repository.find_mode_v3();
+		}
 		_isMasterMode = true;
 	}
 
+	_isDeviceDetected = false;
 	for (uint8_t i = 0; i < _delayFindMe; i++) {
 		if (_phoneNumbers == 1) {
 			_isDeviceDetected = bluetooth_repository.is_device_detected(_bufDeviceAddress, _bufDeviceName);
@@ -355,6 +361,17 @@ void motionDetectActivity() {
 		_isOnMotionDetect = false;
 		return;
 	}
+	if ((_isExternalInterruptOn & 0x01U) != 0U && !(_isExtenalInterruptNormalyClosed ^ digitalRead(3))) {
+		if ((_isExternalInterruptOn & 0x02U) != 0U) {
+			_isExternalInterruptOn &= static_cast<uint8_t>(~0x02U);
+			sim_repository.hangUp();
+		}
+		_isOnExternalMotionDetect = false;
+	}
+	if ((_isExternalInterruptOn & 0x01U) != 0U && (_isExtenalInterruptNormalyClosed ^ digitalRead(3)) && sim_repository.isCallActive()) {
+		delay(250UL);
+		return;
+	}
 
 	//if ((millis() - _millsStart) > _sensitivityAlarm)
 	//{
@@ -365,10 +382,11 @@ void motionDetectActivity() {
 	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && _isExternalInterruptOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))))
 	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))) || _isExternalInterruptOn))	/*if(true)*/
 
-	if (_isAlarmOn && ((_isOnMotionDetect && !_isExternalInterruptOn)
-		|| _isOnExternalMotionDetect
-		|| ((_isExtenalInterruptNormalyClosed ^ digitalRead(3))
-			&& _isExternalInterruptOn))) {
+	if (_isAlarmOn && (
+		(_isOnMotionDetect && ((_isExternalInterruptOn & 0x01U) == 0U))
+		|| ((_isOnExternalMotionDetect || (_isExtenalInterruptNormalyClosed ^ digitalRead(3)))
+			&& ((_isExternalInterruptOn & 0x01U) != 0U))
+	)) {
 
 		blinkLedHideMode();
 
@@ -380,11 +398,13 @@ void motionDetectActivity() {
 
 		if (_findOutPhonesMode == 1) {
 			if (!_isDeviceDetected) {
+				if ((_isExternalInterruptOn & 0x01U) != 0U) { _isExternalInterruptOn |= 0x02U; }
 				callSim900();
 				_isMasterMode = false;
 			}
 		}
 		else {
+			if ((_isExternalInterruptOn & 0x01U) != 0U) { _isExternalInterruptOn |= 0x02U; }
 			callSim900();
 			_isMasterMode = false;
 		}
@@ -527,6 +547,16 @@ void motionDetectActivity() {
 			uint8_t maxIndex = static_cast<uint8_t>(smsCount + 10);
 			for (uint8_t i = 1; i <= maxIndex; i++) {
 				if (!sim_repository.readSms(i, sender, sizeof(sender), message, sizeof(message))) { continue; }
+				DEBUG_SERIAL_PRINT(F("SMS ricevuto ["));
+				DEBUG_SERIAL_PRINT(i);
+				DEBUG_SERIAL_PRINT(F("] da "));
+				DEBUG_SERIAL_PRINT(sender);
+				DEBUG_SERIAL_PRINT(F(": "));
+				DEBUG_SERIAL_PRINTLN(message);
+				if (!sim_repository.deleteSmsAt(i)) {
+					DEBUG_SERIAL_PRINTLN(F("Cancellazione SMS non riuscita"));
+					return;
+				}
 				blinkLedHideMode();
 				const char* number = sender;
 				if (strncmp(number, "+39", 3) == 0) { number += 3; }
@@ -539,91 +569,113 @@ void motionDetectActivity() {
 			}
 		}
 
+		void deactivateOtherAlarmModes() {
+			_isPIRSensorActivated = 0;
+			_findOutPhonesMode = 0;
+			_isBuzzerOn = 0;
+			_isExternalInterruptOn = 0;
+			_isOnMotionDetect = false;
+			_isOnExternalMotionDetect = false;
+		}
+
 		void listOfSmsCommands(const char* command) {
+			if (command == nullptr || command[0] == '\0' || command[1] == '\0' || command[2] != '\0') { return; }
+			// P1: seleziona il numero di telefono principale per le chiamate.
 			if (command[0] == 'P' && command[1] == '1') {
 				_phoneNumbers = 1;
 				callSim900();
 			}
+			// P2: seleziona il numero di telefono alternativo per le chiamate.
 			if (command[0] == 'P' && command[1] == '2') {
 				_phoneNumbers = 2;
 				callSim900();
 			}
+			// Rc: abilita la risposta automatica alle chiamate in ingresso.
 			if (command[0] == 'R' && command[1] == 'c') {
 				sim_repository.enableIncomingCall(1);
 			}
+			// Rs: disabilita la risposta automatica e richiama il numero selezionato.
 			if (command[0] == 'R' && command[1] == 's') {
 				sim_repository.disableIncomingCall();
 				callSim900();
 			}
+			// Dc: disabilita le chiamate di allarme e chiude quella eventualmente in corso.
 			if (command[0] == 'D' && command[1] == 'c') {
 				_isDisableCall = true;
+				_isExternalInterruptOn &= static_cast<uint8_t>(~0x02U);
+				sim_repository.hangUp();
 			}
+			// Ab: accende il Bluetooth e avvia il relativo timer di spegnimento.
 			if (command[0] == 'A' && command[1] == 'b') {
 				turnOnBlueToothAndSetTurnOffTimer();
 				blinkLed(500, 3);
 			}
+			// Al: abilita i lampeggi del LED di alimentazione.
 			if (command[0] == 'A' && command[1] == 'l') {
 				_isBlueLedDisable = false;
 				blinkLed(500, 3);
 			}
+			// Ck: richiama il numero selezionato per verificare il sistema.
 			if (command[0] == 'C' && command[1] == 'k') {
 				callSim900();
 			}
+			// Nv: attiva la modalità Non vedermi con ricerca Bluetooth del telefono.
 			if (command[0] == 'N' && command[1] == 'v') {
+				deactivateOtherAlarmModes();
 				_findOutPhonesMode = 1;
 				_isBTSleepON = false;
 				_timeToTurnOnAlarm = 0;
-				findOutPhonesONAndSetBluetoothInMasterModeActivity();
 				blinkLed(500, 3);
 			}
+			// Eo: attiva l'allarme con contatto esterno normalmente aperto.
 			if (command[0] == 'E' && command[1] == 'o') {
+				deactivateOtherAlarmModes();
 				_isBTSleepON = true;
-				_isPIRSensorActivated = 0;
-				_findOutPhonesMode = 0;
-				_isBuzzerOn = 0;
 				_isExternalInterruptOn = 1;
 				activateFunctionAlarm();
 				bluetooth_repository.turnOffBlueTooth();
 				_isExtenalInterruptNormalyClosed = false;
 			}
+			// Ex: disabilita l'allarme del contatto esterno.
 			if (command[0] == 'E' && command[1] == 'x') {
 				_isExternalInterruptOn = 0;
 			}
+			// Ec: attiva l'allarme con contatto esterno normalmente chiuso.
 			if (command[0] == 'E' && command[1] == 'c') {
+				deactivateOtherAlarmModes();
 				_isBTSleepON = true;
-				_isPIRSensorActivated = 0;
-				_findOutPhonesMode = 0;
-				_isBuzzerOn = 0;
 				_isExternalInterruptOn = 1;
-				activateFunctionAlarm();
+				_timeToTurnOnAlarm = 0;
+				_isDisableCall = false;
+				_isAlarmOn = true;
 				bluetooth_repository.turnOffBlueTooth();
 				_isExtenalInterruptNormalyClosed = true;
 			}
+			// Md: attiva il rilevamento movimento o inclinazione senza Bluetooth.
 			if (command[0] == 'M' && command[1] == 'd') {
+				deactivateOtherAlarmModes();
 				_isBTSleepON = true;
-				_isPIRSensorActivated = 0;
-				_findOutPhonesMode = 0;
-				_isBuzzerOn = 0;
 				activateFunctionAlarm();
 				bluetooth_repository.turnOffBlueTooth();
 			}
+			// Bz: abilita il buzzer, se presente nell'hardware.
 			if (command[0] == 'B' && command[1] == 'z') {
 				_isBuzzerOn = 1;
 				blinkLed(500, 3);
 			}
+			// Wc: attiva il sensore PIR senza Bluetooth.
 			if (command[0] == 'W' && command[1] == 'c') {
+				deactivateOtherAlarmModes();
 				_isBTSleepON = true;
 				_isPIRSensorActivated = 1;
-				_findOutPhonesMode = 0;
-				/*	_isBuzzerOn = 0;*/
 				activateFunctionAlarm();
 				bluetooth_repository.turnOffBlueTooth();
 			}
+			// Fm: attiva la modalità Trova il dispositivo.
 			if (command[0] == 'F' && command[1] == 'm') {
+				deactivateOtherAlarmModes();
 				_isBTSleepON = false;
 				_findOutPhonesMode = 2;
-				_isPIRSensorActivated = 0;
-				_isBuzzerOn = 0;
 				activateFunctionAlarm();
 			}
 		}

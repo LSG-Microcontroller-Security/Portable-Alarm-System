@@ -19,6 +19,7 @@ public:
     virtual void begin(unsigned long baud_rate);
     virtual void call(const char* number);
     virtual void hangUp();
+    virtual bool isCallActive();
     virtual void enableIncomingCall(uint8_t number_of_rings);
     virtual void disableIncomingCall();
     virtual void setSmsTextMode();
@@ -49,6 +50,7 @@ public:
     void begin(unsigned long baud_rate);
     void call(const char* number);
     void hangUp();
+    bool isCallActive();
     void enableIncomingCall(uint8_t number_of_rings);
     void disableIncomingCall();
     void setSmsTextMode();

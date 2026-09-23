@@ -14,6 +14,7 @@
 #define AT_SET_SMS_CHARSET           "AT+CSCS=\"GSM\""
 #define ATD_COMMAND                  "ATD"
 #define HANGUP_COMMAND               "ATH"
+#define AT_LIST_CURRENT_CALLS         "AT+CLCC"
 #define AT_AUTO_ANSWER_PREFIX         "ATS0="
 #define AT_SEND_SMS_PREFIX           "AT+CMGS=\""
 #define AT_SEND_SMS_HEADER           "+CMGS:"
@@ -110,12 +111,43 @@ void SimRepository::call(const char* number) {
 	serial_.print(number);
 	serial_.write((uint8_t)';');
 	serial_.write((uint8_t)'\r');
+	wait_for_pattern(LITERAL_OK, 2000UL);
 }
 
 void SimRepository::hangUp() {
 	clear_receive_buffer();
 	send_at_cmd(serial_, HANGUP_COMMAND);
 	wait_for_pattern(LITERAL_OK, 2000UL);
+}
+
+bool SimRepository::isCallActive() {
+	clear_receive_buffer();
+	send_at_cmd(serial_, AT_LIST_CURRENT_CALLS);
+	const char* call_header = "+CLCC:";
+	uint8_t call_header_pos = 0U;
+	uint8_t ok_pos = 0U;
+	unsigned long start = millis();
+	while (static_cast<unsigned long>(millis() - start) < 2000UL) {
+		if (serial_.available() <= 0) { continue; }
+		int read_value = serial_.read();
+		if (read_value < 0) { continue; }
+		char c = static_cast<char>(read_value);
+		if (c == call_header[call_header_pos]) {
+			++call_header_pos;
+			if (call_header[call_header_pos] == '\0') { return true; }
+		}
+		else {
+			call_header_pos = (c == call_header[0]) ? 1U : 0U;
+		}
+		if (c == LITERAL_OK[ok_pos]) {
+			++ok_pos;
+			if (LITERAL_OK[ok_pos] == '\0') { return false; }
+		}
+		else {
+			ok_pos = (c == LITERAL_OK[0]) ? 1U : 0U;
+		}
+	}
+	return false;
 }
 
 void SimRepository::enableIncomingCall(uint8_t number_of_rings) {

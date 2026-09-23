@@ -57,7 +57,7 @@ void initialize_configuration() {
 	write_eeprom_text(address_temperature_enabled, "0");
 	write_eeprom_text(address_temperature_max, "60");
 	write_eeprom_text(address_pir_enabled, "0");
-	write_eeprom_text(address_device_1, "6045,cb,3122bd");
+	write_eeprom_text(address_device_1, "6045,CB,3122BD");
 	write_eeprom_text(address_device_name_1, "ASUS_Z017D");
 	write_eeprom_text(address_find_phones_enabled, "0");
 	write_eeprom_text(address_bluetooth_sleep_enabled, "1");

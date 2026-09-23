@@ -55,13 +55,13 @@
     <ClInclude Include="..\..\..\MicroControllerTeamProject\libraries\MF_Commons\src\mf_commons_commonsLayer.h">
       <Filter>commons</Filter>
     </ClInclude>
-    <ClInclude Include="BluetoothCommandUtil2.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="BluetoothDynamicMenu.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="BluetoothFrameWriter.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothCommandUtil.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,11 +7,9 @@
 class BluetoothDynamicMenu {
 public:
     static void process();
-
     static void loadMainMenu();
     static void loadConfigurationMenu();
     static void loadSecurityMenu();
-
 private:
     static const uint8_t bluetooth_receive_buffer_size = 64U;
 

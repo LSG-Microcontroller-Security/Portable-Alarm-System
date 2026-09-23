@@ -15,28 +15,18 @@ inline const char* bluetooth_find_program_text( const char* text,BluetoothProgra
 inline unsigned long bluetooth_millis() {
     return millis();
 }
-
 inline void bluetooth_delay(unsigned long milliseconds) {
     delay(milliseconds);
 }
-
 #else
-
 typedef const char* BluetoothProgramText;
-
 #define BT_TEXT(value) (value)
-
 inline char bluetooth_program_read_char(BluetoothProgramText source) {
     return *source;
 }
-
-inline const char* bluetooth_find_program_text(
-    const char* text,
-    BluetoothProgramText pattern) {
-
+inline const char* bluetooth_find_program_text(const char* text,BluetoothProgramText pattern) {
     return strstr(text, pattern);
 }
-
 inline unsigned long bluetooth_millis() {
     return 0UL;
 }

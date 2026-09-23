@@ -119,7 +119,6 @@ const int BUFSIZEEXTERNALINTERRUPTISON = 2;
 char _bufExternalInterruptIsON[BUFSIZEEXTERNALINTERRUPTISON];
 const int BUFSIZEBUZZERISON = 2;
 char _bufBuzzerIsON[BUFSIZEBUZZERISON];
-
 void setup() {
 	my_sim900.Begin(19200);
 	my_sim900.IsCallDisabled(false);

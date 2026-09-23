@@ -16,7 +16,7 @@
 #include <EEPROM.h>
 #include <MySim900.h>
 #include <ActivityManager.h>
-#include "BluetoothCommandUtil2.h"
+#include "BluetoothCommandUtil.h"
 #include "BluetoothFrameWriter.h"
 #include "BluetoothDynamicMenu.h"
 
@@ -47,8 +47,6 @@ HardwareSerialAdapter bluetooth_serial_adapter(Serial);
 AvrMicroRepository bluetooth_avr_repository(bluetooth_serial_adapter, mf::commons::commonsLayer::AnalogRefMode::DEFAULT_m, 5.0f);
 BlueToothRepository bluetooth_repository(bluetooth_avr_repository, 10, 6, 38400, 9600);
 BluetoothFrameWriter bluetooth_frame_writer(bluetooth_repository);
-
-
 const byte _addressStartBufPhoneNumber = 1;
 const byte _addressStartBufPrecisionNumber = 12;
 const byte _addressStartBufTemperatureIsOn = 14;
@@ -137,7 +135,7 @@ void setup() {
 	initilizeEEPromData();
 	if (_findOutPhonesMode != 0) {
 		_isBTSleepON = 0;
-		bluetooth_frame_writer.send_program_frame(PSTR("Find activated"), BluetoothCommandUtil2::Message);
+		bluetooth_frame_writer.send_program_frame(PSTR("Find activated"), BluetoothCommandUtil::Message);
 		bluetooth_frame_writer.send_end();
 	}
 	bluetooth_repository.turnOnBlueTooth();
@@ -175,7 +173,6 @@ void setup() {
 	pinMode(_pin_pir, INPUT_PULLUP);
 	blinkLedHideMode();
 }
-
 void initilizeEEPromData() {
 	LSG_EEpromRW eeprom_rw;
 	eeprom_rw.eeprom_read_string(_addressStartBufPhoneNumber, _phoneNumber, BUFSIZEPHONENUMBER);
@@ -201,17 +198,14 @@ void initilizeEEPromData() {
 	eeprom_rw.eeprom_read_string(_addressBuzzerIsOn, _bufBuzzerIsON, BUFSIZEBUZZERISON);
 	_isBuzzerOn = atoi(&_bufBuzzerIsON[0]);
 }
-
 void inizializePins() {
 	pinMode(_pin_powerLed, OUTPUT);
 	pinMode(0, INPUT_PULLUP);
 }
-
 void inizializeInterrupts() {
 	attachInterrupt(0, motionTiltInternalInterrupt, RISING);
 	attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
 }
-
 void callSim900() {
 	//Serial.println("Faccio chiamata");
 	if (_isDisableCall) { return; }
@@ -230,19 +224,16 @@ void callSim900() {
 	//E agevola la pulizia per la ricezione sms.
 	my_sim900.ReadIncomingChars2();
 }
-
 void motionTiltExternalInterrupt() {
 	if (_isExternalInterruptOn /*&& !_isPIRSensorActivated*/) {
 		_isOnExternalMotionDetect = true;
 	}
 }
-
 void motionTiltInternalInterrupt() {
 	if (!_isPIRSensorActivated) {
 		_isOnMotionDetect = true;
 	}
 }
-
 void turnOffBluetoohIfTimeIsOver() {
 	if (_findOutPhonesMode == 0
 		&& (millis() > _timeToTurnOnAlarm)
@@ -252,7 +243,6 @@ void turnOffBluetoohIfTimeIsOver() {
 		bluetooth_repository.turnOffBlueTooth();
 	}
 }
-
 //void turnOnBlueToothIfMotionIsDetected()
 //{
 //	if (_isOnMotionDetect
@@ -265,7 +255,6 @@ void turnOffBluetoohIfTimeIsOver() {
 //		turnOnBlueToothAndSetTurnOffTimer(false);
 //	}
 //}
-
 void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	if (_isDisableCall) { return; }
 	//todo:da mettere in altro luogo.
@@ -317,7 +306,6 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	//return _isDeviceDetected;
 	//}
 }
-
 void loop() {
 	readIncomingSMS();
 
@@ -379,7 +367,6 @@ void loop() {
 		BluetoothDynamicMenu::process();
 	}
 }
-
 void motionDetectActivity() {
 	if (_isDisableCall || _findOutPhonesMode == 2 || _isPIRSensorActivated) {
 		_isOnMotionDetect = false;
@@ -446,12 +433,10 @@ void motionDetectActivity() {
 		_isOnExternalMotionDetect = false;
 	}
 }
-
 //void restartBlueTooth()
 //{
 //	Serial.readString();
 //}
-
 void turnOnBlueToothAndSetTurnOffTimer() {
 	Serial.flush();
 	bluetooth_repository.set_to_slave_mode();
@@ -464,7 +449,6 @@ void turnOnBlueToothAndSetTurnOffTimer() {
 	//	}
 	_isMasterMode = false;
 }
-
 void blinkLedHideMode() {
 	if (_isBlueLedDisable) { return; }
 	for (uint8_t i = 0; i < 3; i++) {
@@ -474,7 +458,6 @@ void blinkLedHideMode() {
 		delay(50);
 	}
 }
-
 void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
 	for (uint8_t i = 0; i < numberOfBlinks; i++) {
 		digitalWrite(_pin_powerLed, HIGH);
@@ -483,7 +466,6 @@ void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
 		delay(blinkDelay);
 	}
 }
-
 void buzzerSensorActivity() {
 	for (uint8_t i = 0; i < 15; i++) {
 		tone(_pin_buzzer, 400, 500);
@@ -491,7 +473,6 @@ void buzzerSensorActivity() {
 		noTone(_pin_buzzer);
 	}
 }
-
 void pirSensorActivity() {
 	if (_isDisableCall) { return; }
 	if (_isPIRSensorActivated && _isAlarmOn) {
@@ -519,12 +500,10 @@ void pirSensorActivity() {
 		}
 	}
 }
-
 void reedRelaySensorActivity(uint8_t pin) {
 	pinMode(pin, OUTPUT);
 	blinkLedHideMode();
 }
-
 void internalTemperatureActivity() {
 	if (_delay_for_temperature.IsDelayTimeFinished(true)) {
 		if ((uint8_t)getTemp() > _tempMax) {
@@ -534,7 +513,6 @@ void internalTemperatureActivity() {
 		}
 	}
 }
-
 void voltageActivity() {
 	if (_delay_for_voltage.IsDelayTimeFinished(true)) {
 		_voltageValue = (5.10 / 1023.00) * analogRead(A1);
@@ -546,7 +524,6 @@ void voltageActivity() {
 		}
 	}
 }
-
 void readIncomingSMS() {
 	//Inserita per scaricare buffer e agevolare arrivo sms.
 	my_sim900.ReadIncomingChars2();
@@ -593,7 +570,6 @@ void readIncomingSMS() {
 		}
 	}
 }
-
 void listOfSmsCommands(String command) {
 
 	//Enable incoming call.
@@ -724,14 +700,12 @@ void listOfSmsCommands(String command) {
 		activateFunctionAlarm();
 	}
 }
-
 void activateFunctionAlarm() {
 	_timeToTurnOnAlarm = 0;
 	_isDisableCall = false;
 	_isAlarmOn = true;
 	callSim900();
 }
-
 double getTemp(void) {
 	unsigned int wADC;
 	double t;
@@ -761,7 +735,6 @@ double getTemp(void) {
 	// The returned temperature is in degrees Celsius.
 	return (t);
 }
-
 //unsigned int offSetTempValue(double externalTemperature)
 //{
 //	unsigned int wADC;

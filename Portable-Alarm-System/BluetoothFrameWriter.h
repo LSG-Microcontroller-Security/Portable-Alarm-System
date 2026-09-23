@@ -49,7 +49,7 @@ inline void bluetooth_delay(unsigned long milliseconds) {
 
 #include <mf_repository_BlueToothRepository.h>
 
-#include "BluetoothCommandUtil2.h"
+#include "BluetoothCommandUtil.h"
 
 class BluetoothFrameWriter {
 public:
@@ -57,47 +57,47 @@ public:
 
     void send_frame(
         const char* message,
-        BluetoothCommandUtil2::CommandTypeC commandType);
+        BluetoothCommandUtil::CommandTypeC commandType);
 
     void send_program_frame(
         BluetoothProgramText message,
-        BluetoothCommandUtil2::CommandTypeA commandType,
+        BluetoothCommandUtil::CommandTypeA commandType,
         uint8_t commandCode);
 
     void send_program_frame(
         BluetoothProgramText message,
-        BluetoothCommandUtil2::CommandTypeB commandType);
+        BluetoothCommandUtil::CommandTypeB commandType);
 
     void send_program_frame(
         BluetoothProgramText message,
-        BluetoothCommandUtil2::CommandTypeC commandType);
+        BluetoothCommandUtil::CommandTypeC commandType);
 
     void send_value_frame(
         BluetoothProgramText label,
         const char* value,
-        BluetoothCommandUtil2::CommandTypeA commandType,
+        BluetoothCommandUtil::CommandTypeA commandType,
         uint8_t commandCode);
 
     void send_program_value_frame(
         BluetoothProgramText label,
         BluetoothProgramText value,
-        BluetoothCommandUtil2::CommandTypeC commandType);
+        BluetoothCommandUtil::CommandTypeC commandType);
 
     void send_value_frame(
         BluetoothProgramText label,
         const char* value,
-        BluetoothCommandUtil2::CommandTypeC commandType);
+        BluetoothCommandUtil::CommandTypeC commandType);
 
     void send_uint_frame(
         BluetoothProgramText label,
         unsigned long value,
-        BluetoothCommandUtil2::CommandTypeA commandType,
+        BluetoothCommandUtil::CommandTypeA commandType,
         uint8_t commandCode);
 
     void send_uint_frame(
         BluetoothProgramText label,
         unsigned long value,
-        BluetoothCommandUtil2::CommandTypeC commandType);
+        BluetoothCommandUtil::CommandTypeC commandType);
 
     void send_end();
 

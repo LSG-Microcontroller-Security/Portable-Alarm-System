@@ -86,13 +86,13 @@ void BluetoothFrameWriter::append_uint(
 
 void BluetoothFrameWriter::send_frame(
     const char* message,
-    BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothCommandUtil::CommandTypeC commandType) {
 
     char frame[frame_size] = {};
 
     append_text(frame, sizeof(frame), message);
 
-    BluetoothCommandUtil2::append_command_type(
+    BluetoothCommandUtil::append_command_type(
         frame,
         sizeof(frame),
         commandType);
@@ -102,7 +102,7 @@ void BluetoothFrameWriter::send_frame(
 
 void BluetoothFrameWriter::send_program_frame(
     BluetoothProgramText message,
-    BluetoothCommandUtil2::CommandTypeA commandType,
+    BluetoothCommandUtil::CommandTypeA commandType,
     uint8_t commandCode) {
 
     char frame[frame_size] = {};
@@ -112,7 +112,7 @@ void BluetoothFrameWriter::send_program_frame(
         sizeof(frame),
         message);
 
-    BluetoothCommandUtil2::append_command_type(
+    BluetoothCommandUtil::append_command_type(
         frame,
         sizeof(frame),
         commandType,
@@ -123,7 +123,7 @@ void BluetoothFrameWriter::send_program_frame(
 
 void BluetoothFrameWriter::send_program_frame(
     BluetoothProgramText message,
-    BluetoothCommandUtil2::CommandTypeB commandType) {
+    BluetoothCommandUtil::CommandTypeB commandType) {
 
     char frame[frame_size] = {};
 
@@ -131,18 +131,13 @@ void BluetoothFrameWriter::send_program_frame(
         frame,
         sizeof(frame),
         message);
-
-    BluetoothCommandUtil2::append_command_type(
-        frame,
-        sizeof(frame),
-        commandType);
-
+    BluetoothCommandUtil::append_command_type(frame,sizeof(frame),commandType);
     bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_program_frame(
     BluetoothProgramText message,
-    BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothCommandUtil::CommandTypeC commandType) {
 
     char frame[frame_size] = {};
 
@@ -151,7 +146,7 @@ void BluetoothFrameWriter::send_program_frame(
         sizeof(frame),
         message);
 
-    BluetoothCommandUtil2::append_command_type(
+    BluetoothCommandUtil::append_command_type(
         frame,
         sizeof(frame),
         commandType);
@@ -162,7 +157,7 @@ void BluetoothFrameWriter::send_program_frame(
 void BluetoothFrameWriter::send_value_frame(
     BluetoothProgramText label,
     const char* value,
-    BluetoothCommandUtil2::CommandTypeA commandType,
+    BluetoothCommandUtil::CommandTypeA commandType,
     uint8_t commandCode) {
 
     char frame[frame_size] = {};
@@ -177,7 +172,7 @@ void BluetoothFrameWriter::send_value_frame(
         sizeof(frame),
         value);
 
-    BluetoothCommandUtil2::append_command_type(
+    BluetoothCommandUtil::append_command_type(
         frame,
         sizeof(frame),
         commandType,
@@ -189,7 +184,7 @@ void BluetoothFrameWriter::send_value_frame(
 void BluetoothFrameWriter::send_program_value_frame(
     BluetoothProgramText label,
     BluetoothProgramText value,
-    BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothCommandUtil::CommandTypeC commandType) {
 
     char frame[frame_size] = {};
 
@@ -203,7 +198,7 @@ void BluetoothFrameWriter::send_program_value_frame(
         sizeof(frame),
         value);
 
-    BluetoothCommandUtil2::append_command_type(
+    BluetoothCommandUtil::append_command_type(
         frame,
         sizeof(frame),
         commandType);
@@ -214,7 +209,7 @@ void BluetoothFrameWriter::send_program_value_frame(
 void BluetoothFrameWriter::send_value_frame(
     BluetoothProgramText label,
     const char* value,
-    BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothCommandUtil::CommandTypeC commandType) {
 
     char frame[frame_size] = {};
 
@@ -228,7 +223,7 @@ void BluetoothFrameWriter::send_value_frame(
         sizeof(frame),
         value);
 
-    BluetoothCommandUtil2::append_command_type(
+    BluetoothCommandUtil::append_command_type(
         frame,
         sizeof(frame),
         commandType);
@@ -239,7 +234,7 @@ void BluetoothFrameWriter::send_value_frame(
 void BluetoothFrameWriter::send_uint_frame(
     BluetoothProgramText label,
     unsigned long value,
-    BluetoothCommandUtil2::CommandTypeA commandType,
+    BluetoothCommandUtil::CommandTypeA commandType,
     uint8_t commandCode) {
 
     char frame[frame_size] = {};
@@ -254,7 +249,7 @@ void BluetoothFrameWriter::send_uint_frame(
         sizeof(frame),
         value);
 
-    BluetoothCommandUtil2::append_command_type(
+    BluetoothCommandUtil::append_command_type(
         frame,
         sizeof(frame),
         commandType,
@@ -266,7 +261,7 @@ void BluetoothFrameWriter::send_uint_frame(
 void BluetoothFrameWriter::send_uint_frame(
     BluetoothProgramText label,
     unsigned long value,
-    BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothCommandUtil::CommandTypeC commandType) {
 
     char frame[frame_size] = {};
 
@@ -280,7 +275,7 @@ void BluetoothFrameWriter::send_uint_frame(
         sizeof(frame),
         value);
 
-    BluetoothCommandUtil2::append_command_type(
+    BluetoothCommandUtil::append_command_type(
         frame,
         sizeof(frame),
         commandType);
@@ -292,5 +287,5 @@ void BluetoothFrameWriter::send_end() {
 
     send_program_frame(
         BT_TEXT(""),
-        BluetoothCommandUtil2::EndTrasmission);
+        BluetoothCommandUtil::EndTrasmission);
 }

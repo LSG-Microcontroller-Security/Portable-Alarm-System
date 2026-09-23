@@ -114,6 +114,9 @@ Preferred pattern:
 - Keep function declarations, definitions and calls on a single line whenever possible.
 - When a function has multiple parameters, keep the parameters on the same line.
 - Do not place each function parameter on a separate line unless a single-line declaration would become impractically long.
+- Do not add extra blank lines between functions or function calls.
+- Keep vertical spacing compact and consistent.
+- Avoid inserting additional empty lines for visual separation unless they are really needed to separate distinct logical sections.
 
 ## Refactoring order
 1. Preserve behavior.

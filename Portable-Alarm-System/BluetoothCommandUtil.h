@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-class BluetoothCommandUtil2 {
+class BluetoothCommandUtil {
 public:
 	enum CommandTypeA : uint8_t { Command, Data, Menu };
 	enum CommandTypeB : uint8_t { EndTrasmission };

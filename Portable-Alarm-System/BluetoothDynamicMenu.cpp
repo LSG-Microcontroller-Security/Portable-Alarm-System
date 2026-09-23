@@ -9,7 +9,7 @@
 
 #include <mf_repository_BlueToothRepository.h>
 
-#include "BluetoothCommandUtil2.h"
+#include "BluetoothCommandUtil.h"
 #include "BluetoothFrameWriter.h"
 
 // Objects already instantiated by Portable-Alarm-System.ino
@@ -176,37 +176,37 @@ void BluetoothDynamicMenu::loadMainMenu() {
     bluetooth_frame_writer.send_value_frame(
         _isAlarmOn ? BT_TEXT("Alarm ON") : BT_TEXT("Alarm OFF"),
         version,
-        BluetoothCommandUtil2::Title);
+        BluetoothCommandUtil::Title);
 
     bluetooth_frame_writer.send_program_frame(
         BT_TEXT("Configuration"),
-        BluetoothCommandUtil2::Menu,
+        BluetoothCommandUtil::Menu,
         1U);
 
     bluetooth_frame_writer.send_program_frame(
         BT_TEXT("Security"),
-        BluetoothCommandUtil2::Menu,
+        BluetoothCommandUtil::Menu,
         4U);
 
     bluetooth_frame_writer.send_program_frame(
         _isAlarmOn ? BT_TEXT("Alarm OFF") : BT_TEXT("Alarm On"),
-        BluetoothCommandUtil2::Command,
+        BluetoothCommandUtil::Command,
         _isAlarmOn ? 3U : 2U);
 
     bluetooth_frame_writer.send_uint_frame(
         BT_TEXT("Temp.:"),
         getTemp(),
-        BluetoothCommandUtil2::Info);
+        BluetoothCommandUtil::Info);
 
     bluetooth_frame_writer.send_program_value_frame(
         BT_TEXT("Batt.level:"),
         calculate_battery_level(_voltageValue),
-        BluetoothCommandUtil2::Info);
+        BluetoothCommandUtil::Info);
 
     bluetooth_frame_writer.send_value_frame(
         BT_TEXT("WhatzUp:"),
         _what_is_happened,
-        BluetoothCommandUtil2::Info);
+        BluetoothCommandUtil::Info);
 
     bluetooth_frame_writer.send_end();
 
@@ -217,43 +217,43 @@ void BluetoothDynamicMenu::loadConfigurationMenu() {
 
     bluetooth_frame_writer.send_program_frame(
         BT_TEXT("Configuration"),
-        BluetoothCommandUtil2::Title);
+        BluetoothCommandUtil::Title);
 
     bluetooth_frame_writer.send_value_frame(
         BT_TEXT("Phone:"),
         _phoneNumber,
-        BluetoothCommandUtil2::Data,
+        BluetoothCommandUtil::Data,
         1U);
 
     bluetooth_frame_writer.send_value_frame(
         BT_TEXT("Ph.Altern.:"),
         _phoneNumberAlternative,
-        BluetoothCommandUtil2::Data,
+        BluetoothCommandUtil::Data,
         99U);
 
     bluetooth_frame_writer.send_uint_frame(
         BT_TEXT("N.Phone:"),
         _phoneNumbers,
-        BluetoothCommandUtil2::Data,
+        BluetoothCommandUtil::Data,
         98U);
 
     bluetooth_frame_writer.send_uint_frame(
         BT_TEXT("TempMax:"),
         _tempMax,
-        BluetoothCommandUtil2::Data,
+        BluetoothCommandUtil::Data,
         4U);
 
     bluetooth_frame_writer.send_uint_frame(
         BT_TEXT("OffSetTemp:"),
         _offSetTempValue,
-        BluetoothCommandUtil2::Data,
+        BluetoothCommandUtil::Data,
         95U);
 
     if (_findOutPhonesMode != 2U) {
         bluetooth_frame_writer.send_uint_frame(
             BT_TEXT("PIR status:"),
             _isPIRSensorActivated,
-            BluetoothCommandUtil2::Data,
+            BluetoothCommandUtil::Data,
             5U);
     }
 
@@ -261,50 +261,50 @@ void BluetoothDynamicMenu::loadConfigurationMenu() {
         bluetooth_frame_writer.send_value_frame(
             BT_TEXT("Addr:"),
             _bufDeviceAddress,
-            BluetoothCommandUtil2::Data,
+            BluetoothCommandUtil::Data,
             10U);
 
         bluetooth_frame_writer.send_value_frame(
             BT_TEXT("Name:"),
             _bufDeviceName,
-            BluetoothCommandUtil2::Data,
+            BluetoothCommandUtil::Data,
             11U);
 
         bluetooth_frame_writer.send_value_frame(
             BT_TEXT("Addr2:"),
             _bufDeviceAddress2,
-            BluetoothCommandUtil2::Data,
+            BluetoothCommandUtil::Data,
             15U);
 
         bluetooth_frame_writer.send_value_frame(
             BT_TEXT("Name2:"),
             _bufDeviceName2,
-            BluetoothCommandUtil2::Data,
+            BluetoothCommandUtil::Data,
             16U);
 
         bluetooth_frame_writer.send_uint_frame(
             BT_TEXT("FindLoop:"),
             _delayFindMe,
-            BluetoothCommandUtil2::Data,
+            BluetoothCommandUtil::Data,
             94U);
     }
 
     bluetooth_frame_writer.send_uint_frame(
         BT_TEXT("FindMode:"),
         _findOutPhonesMode,
-        BluetoothCommandUtil2::Data,
+        BluetoothCommandUtil::Data,
         12U);
 
     bluetooth_frame_writer.send_uint_frame(
         BT_TEXT("Ext.Int:"),
         _isExternalInterruptOn,
-        BluetoothCommandUtil2::Data,
+        BluetoothCommandUtil::Data,
         13U);
 
     bluetooth_frame_writer.send_uint_frame(
         BT_TEXT("Buzz.:"),
         _isBuzzerOn,
-        BluetoothCommandUtil2::Data,
+        BluetoothCommandUtil::Data,
         14U);
 
     bluetooth_frame_writer.send_end();
@@ -314,16 +314,16 @@ void BluetoothDynamicMenu::loadSecurityMenu() {
 
     bluetooth_frame_writer.send_program_frame(
         BT_TEXT("Security"),
-        BluetoothCommandUtil2::Title);
+        BluetoothCommandUtil::Title);
 
     bluetooth_frame_writer.send_program_frame(
         BT_TEXT("Change passw.:"),
-        BluetoothCommandUtil2::Menu,
+        BluetoothCommandUtil::Menu,
         5U);
 
     bluetooth_frame_writer.send_program_frame(
         BT_TEXT("Change name:"),
-        BluetoothCommandUtil2::Menu,
+        BluetoothCommandUtil::Menu,
         6U);
 
     bluetooth_frame_writer.send_end();
@@ -568,11 +568,11 @@ void BluetoothDynamicMenu::process() {
     else if (contains(bluetooth_data, BT_TEXT("M005"))) {
         bluetooth_frame_writer.send_program_frame(
             BT_TEXT("Change passw."),
-            BluetoothCommandUtil2::Title);
+            BluetoothCommandUtil::Title);
 
         bluetooth_frame_writer.send_program_frame(
             BT_TEXT("Insert old passw.:"),
-            BluetoothCommandUtil2::Data,
+            BluetoothCommandUtil::Data,
             6U);
 
         bluetooth_frame_writer.send_end();
@@ -580,11 +580,11 @@ void BluetoothDynamicMenu::process() {
     else if (contains(bluetooth_data, BT_TEXT("M006"))) {
         bluetooth_frame_writer.send_program_frame(
             BT_TEXT("Change passw."),
-            BluetoothCommandUtil2::Title);
+            BluetoothCommandUtil::Title);
 
         bluetooth_frame_writer.send_program_frame(
             BT_TEXT("Insert name:"),
-            BluetoothCommandUtil2::Data,
+            BluetoothCommandUtil::Data,
             7U);
 
         bluetooth_frame_writer.send_end();
@@ -595,11 +595,11 @@ void BluetoothDynamicMenu::process() {
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Change passw."),
-                BluetoothCommandUtil2::Title);
+                BluetoothCommandUtil::Title);
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Insert new passw:"),
-                BluetoothCommandUtil2::Data,
+                BluetoothCommandUtil::Data,
                 8U);
 
             bluetooth_frame_writer.send_end();
@@ -607,11 +607,11 @@ void BluetoothDynamicMenu::process() {
         else {
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Change passw."),
-                BluetoothCommandUtil2::Title);
+                BluetoothCommandUtil::Title);
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Wrong passw:"),
-                BluetoothCommandUtil2::Message);
+                BluetoothCommandUtil::Message);
 
             bluetooth_frame_writer.send_end();
         }
@@ -622,11 +622,11 @@ void BluetoothDynamicMenu::process() {
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Change passw."),
-                BluetoothCommandUtil2::Title);
+                BluetoothCommandUtil::Title);
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Confirm pass:"),
-                BluetoothCommandUtil2::Data,
+                BluetoothCommandUtil::Data,
                 9U);
 
             bluetooth_frame_writer.send_end();
@@ -638,11 +638,11 @@ void BluetoothDynamicMenu::process() {
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Change passw."),
-                BluetoothCommandUtil2::Title);
+                BluetoothCommandUtil::Title);
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("changed:"),
-                BluetoothCommandUtil2::Message);
+                BluetoothCommandUtil::Message);
 
             bluetooth_frame_writer.send_end();
 
@@ -661,11 +661,11 @@ void BluetoothDynamicMenu::process() {
         else {
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Change passw."),
-                BluetoothCommandUtil2::Title);
+                BluetoothCommandUtil::Title);
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("passw. doesn't match"),
-                BluetoothCommandUtil2::Message);
+                BluetoothCommandUtil::Message);
 
             bluetooth_frame_writer.send_end();
 
@@ -676,11 +676,11 @@ void BluetoothDynamicMenu::process() {
         if (read_value(bluetooth_data, value, sizeof(value))) {
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("Change passw."),
-                BluetoothCommandUtil2::Title);
+                BluetoothCommandUtil::Title);
 
             bluetooth_frame_writer.send_program_frame(
                 BT_TEXT("changed:"),
-                BluetoothCommandUtil2::Message);
+                BluetoothCommandUtil::Message);
 
             bluetooth_frame_writer.send_end();
 

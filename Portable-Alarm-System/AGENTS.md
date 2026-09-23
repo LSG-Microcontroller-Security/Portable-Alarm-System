@@ -15,6 +15,23 @@
 - Use PSTR() / PROGMEM for constant Bluetooth and menu strings.
 - Do not move constant strings into SRAM just to simplify testing.
 - Avoid increasing buffer sizes unless required.
+## Memory
+- Avoid Arduino String in new code.
+- Avoid dynamic allocation unless strictly necessary.
+- Prefer fixed-size char buffers.
+- Keep constant strings in Flash on AVR.
+- Use PSTR() / PROGMEM for constant Bluetooth and menu strings.
+- Do not move constant strings into SRAM just to simplify testing.
+- Avoid increasing buffer sizes unless required.
+- Treat Flash and SRAM usage as primary design constraints, especially on AVR targets.
+- Do not use Arduino String in new or refactored code.
+- Do not use dynamic allocation (`new`, `delete`, `malloc`, `free`) unless explicitly requested and strictly necessary.
+- Prefer `const char*`, fixed-size `char[]` buffers and direct buffer processing.
+- Avoid unnecessary string copies, temporary strings and intermediate buffers.
+- Keep fixed-size buffers as small as safely possible; do not enlarge buffers only for implementation convenience.
+- Prefer passing pointers/references to existing data instead of duplicating it in RAM.
+- Prefer small integer types such as `uint8_t` when their range is sufficient.
+- Keep constant text in Flash on AVR whenever possible using `F()`, `PSTR()` or `PROGMEM`, as appropriate.
 
 ## AVR / desktop compatibility
 - Higher-level Bluetooth code must remain compilable as normal desktop C++ for future mock tests.

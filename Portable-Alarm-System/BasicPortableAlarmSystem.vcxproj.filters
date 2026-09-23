@@ -75,5 +75,8 @@
     <Image Include="..\SitoPortable\photo usate\terza.png">
       <Filter>documents\images</Filter>
     </Image>
+    <Image Include="..\Documents\images\Presentation\images\ConfigurationMenu.png">
+      <Filter>documents\images</Filter>
+    </Image>
   </ItemGroup>
 </Project>

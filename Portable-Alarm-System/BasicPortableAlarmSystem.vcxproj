@@ -215,6 +215,7 @@
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\Documents\images\Presentation\images\ConfigurationMenu.png" />
     <Image Include="..\SitoPortable\photo usate\IMG_20190405_110031.jpg" />
     <Image Include="..\SitoPortable\photo usate\portable1.png" />
     <Image Include="..\SitoPortable\photo usate\terza.png" />

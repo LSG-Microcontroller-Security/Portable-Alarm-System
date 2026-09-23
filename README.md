@@ -33,6 +33,16 @@ The system was conceived as a small modular platform rather than as a single-pur
 
 The main controller is based on an AVR/Arduino-compatible microcontroller, while external modules can be added according to the required application. The firmware is designed with particular attention to limited Flash and SRAM resources.
 
+## Documentation
+
+[Download the Portable Alarm System leaflet (DOCX)](Documents/Portable%20volantino.docx)
+
+## Video
+
+Project demonstration:
+
+https://www.youtube.com/watch?v=Jp0SQHU51y8
+
 ## Project images
 
 [![Portable Alarm System](SitoPortable/photo%20usate/portable1.png)](SitoPortable/photo%20usate/portable1.png)

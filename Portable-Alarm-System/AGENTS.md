@@ -111,6 +111,9 @@ Preferred pattern:
 - Avoid heavyweight STL structures in AVR code.
 - Optimize primarily for AVR Flash and SRAM usage.
 - Keep code simple and explicit.
+- Keep function declarations, definitions and calls on a single line whenever possible.
+- When a function has multiple parameters, keep the parameters on the same line.
+- Do not place each function parameter on a separate line unless a single-line declaration would become impractically long.
 
 ## Refactoring order
 1. Preserve behavior.

@@ -146,12 +146,6 @@ void setup() {
 	sim_repository.setNetlightEnabled(false);
 	sim_repository.initSmsReception();
 	sim_repository.deleteAllSms();
-	my_sim900.ATCommand("AT+CBAND=""EGSM_PCS_MODE""");
-	delay(1000);
-	if (my_sim900.IsAvailable() > 0) {
-		String s = my_sim900.ReadIncomingChars2();
-		DEBUG_SERIAL_PRINTLN(s);
-	}
 	pinMode(_pin_pir, INPUT_PULLUP);
 	blinkLedHideMode();
 }
@@ -199,12 +193,7 @@ void callSim900() {
 	if (_phoneNumbers == 2) {
 		strcat(phoneNumber, _phoneNumberAlternative);
 	}
-	my_sim900.DialVoiceCall(phoneNumber);
-	delay(1000);
-	//Inserita per scaricare buffer dopo chiamata
-	//dove si puo aggiungere codice per recupero risultato.
-	//E agevola la pulizia per la ricezione sms.
-	my_sim900.ReadIncomingChars2();
+	sim_repository.call(phoneNumber);
 }
 void motionTiltExternalInterrupt() {
 	if (_isExternalInterruptOn /*&& !_isPIRSensorActivated*/) {
@@ -403,8 +392,9 @@ void motionDetectActivity() {
 
 			findOutPhonesONAndSetBluetoothInMasterModeActivity();*/
 
-	EIFR |= 1 << INTF1; //clear external interrupt 1
-	EIFR |= 1 << INTF0; //clear external interrupt 0
+
+		EIFR |= 1 << INTF1; //clear external interrupt 1
+		EIFR |= 1 << INTF0; //clear external interrupt 0
 		//EIFR = 0x01;
 		sei();
 

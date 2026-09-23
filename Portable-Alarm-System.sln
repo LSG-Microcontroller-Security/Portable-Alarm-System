@@ -8,10 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.travis.yml = .travis.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_library", "_library", "{02ED6CDB-0C8E-45BD-8EC5-ED7F59AE5B93}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext_library", "ext_library", "{02ED6CDB-0C8E-45BD-8EC5-ED7F59AE5B93}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\MicroControllerTeamProject\libraries\BlueToothDynamicInterface\BlueToothCommandsUtil.cpp = ..\..\MicroControllerTeamProject\libraries\BlueToothDynamicInterface\BlueToothCommandsUtil.cpp
-		..\..\MicroControllerTeamProject\libraries\BlueToothDynamicInterface\BlueToothCommandsUtil.h = ..\..\MicroControllerTeamProject\libraries\BlueToothDynamicInterface\BlueToothCommandsUtil.h
 		..\..\MicroControllerTeamProject\libraries\MF_Commons\src\mf_commons_commonsLayer.h = ..\..\MicroControllerTeamProject\libraries\MF_Commons\src\mf_commons_commonsLayer.h
 		..\..\MicroControllerTeamProject\libraries\MF_BlueToothRepository\src\mf_repository_BlueToothRepository.cpp = ..\..\MicroControllerTeamProject\libraries\MF_BlueToothRepository\src\mf_repository_BlueToothRepository.cpp
 		..\..\MicroControllerTeamProject\libraries\MF_BlueToothRepository\src\mf_repository_BlueToothRepository.h = ..\..\MicroControllerTeamProject\libraries\MF_BlueToothRepository\src\mf_repository_BlueToothRepository.h

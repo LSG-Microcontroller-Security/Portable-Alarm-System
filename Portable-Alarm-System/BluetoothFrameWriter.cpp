@@ -1,285 +1,296 @@
 #include "BluetoothFrameWriter.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 BluetoothFrameWriter::BluetoothFrameWriter(
-	BlueToothRepository& bluetoothRepository)
-	: bluetoothRepository(bluetoothRepository) {
+    BlueToothRepository& bluetoothRepository)
+    : bluetoothRepository(bluetoothRepository) {
 }
 
 void BluetoothFrameWriter::append_char(
-	char* destination,
-	uint8_t capacity,
-	char value) {
+    char* destination,
+    uint8_t capacity,
+    char value) {
 
-	if (destination == nullptr || capacity == 0U) {
-		return;
-	}
+    if (destination == nullptr || capacity == 0U) {
+        return;
+    }
 
-	uint8_t length = 0U;
+    uint8_t length = 0U;
 
-	while (
-		length < capacity &&
-		destination[length] != '\0') {
+    while (
+        length < capacity &&
+        destination[length] != '\0') {
 
-		length++;
-	}
+        length++;
+    }
 
-	if (length + 1U < capacity) {
-		destination[length] = value;
-		destination[length + 1U] = '\0';
-	}
+    if (length + 1U < capacity) {
+        destination[length] = value;
+        destination[length + 1U] = '\0';
+    }
 }
 
 void BluetoothFrameWriter::append_text(
-	char* destination,
-	uint8_t capacity,
-	const char* source) {
+    char* destination,
+    uint8_t capacity,
+    const char* source) {
 
-	if (source == nullptr) {
-		return;
-	}
+    if (source == nullptr) {
+        return;
+    }
 
-	while (*source != '\0') {
-		append_char(destination, capacity, *source++);
-	}
+    while (*source != '\0') {
+        append_char(destination, capacity, *source++);
+    }
 }
 
 void BluetoothFrameWriter::append_program_text(
-	char* destination,
-	uint8_t capacity,
-	PGM_P source) {
+    char* destination,
+    uint8_t capacity,
+    BluetoothProgramText source) {
 
-	if (source == nullptr) {
-		return;
-	}
+    if (source == nullptr) {
+        return;
+    }
 
-	char character = pgm_read_byte(source++);
+    char character = bluetooth_program_read_char(source++);
 
-	while (character != '\0') {
-		append_char(destination, capacity, character);
-		character = pgm_read_byte(source++);
-	}
+    while (character != '\0') {
+        append_char(destination, capacity, character);
+        character = bluetooth_program_read_char(source++);
+    }
 }
 
 void BluetoothFrameWriter::append_uint(
-	char* destination,
-	uint8_t capacity,
-	unsigned long value) {
+    char* destination,
+    uint8_t capacity,
+    unsigned long value) {
 
-	char number[11] = {};
-	ultoa(value, number, 10);
-	append_text(destination, capacity, number);
+    char number[11] = {};
+    uint8_t length = 0U;
+
+    do {
+        number[length++] =
+            static_cast<char>('0' + (value % 10UL));
+
+        value /= 10UL;
+    }
+    while (value != 0UL && length < sizeof(number));
+
+    while (length > 0U) {
+        append_char(
+            destination,
+            capacity,
+            number[--length]);
+    }
 }
 
 void BluetoothFrameWriter::send_frame(
-	const char* message,
-	BluetoothCommandUtil2::CommandTypeC commandType) {
+    const char* message,
+    BluetoothCommandUtil2::CommandTypeC commandType) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_text(frame, sizeof(frame), message);
+    append_text(frame, sizeof(frame), message);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_program_frame(
-	PGM_P message,
-	BluetoothCommandUtil2::CommandTypeA commandType,
-	uint8_t commandCode) {
+    BluetoothProgramText message,
+    BluetoothCommandUtil2::CommandTypeA commandType,
+    uint8_t commandCode) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		message);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        message);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType,
-		commandCode);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType,
+        commandCode);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_program_frame(
-	PGM_P message,
-	BluetoothCommandUtil2::CommandTypeB commandType) {
+    BluetoothProgramText message,
+    BluetoothCommandUtil2::CommandTypeB commandType) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		message);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        message);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_program_frame(
-	PGM_P message,
-	BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothProgramText message,
+    BluetoothCommandUtil2::CommandTypeC commandType) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		message);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        message);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_value_frame(
-	PGM_P label,
-	const char* value,
-	BluetoothCommandUtil2::CommandTypeA commandType,
-	uint8_t commandCode) {
+    BluetoothProgramText label,
+    const char* value,
+    BluetoothCommandUtil2::CommandTypeA commandType,
+    uint8_t commandCode) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		label);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        label);
 
-	append_text(
-		frame,
-		sizeof(frame),
-		value);
+    append_text(
+        frame,
+        sizeof(frame),
+        value);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType,
-		commandCode);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType,
+        commandCode);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_program_value_frame(
-	PGM_P label,
-	PGM_P value,
-	BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothProgramText label,
+    BluetoothProgramText value,
+    BluetoothCommandUtil2::CommandTypeC commandType) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		label);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        label);
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		value);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        value);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_value_frame(
-	PGM_P label,
-	const char* value,
-	BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothProgramText label,
+    const char* value,
+    BluetoothCommandUtil2::CommandTypeC commandType) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		label);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        label);
 
-	append_text(
-		frame,
-		sizeof(frame),
-		value);
+    append_text(
+        frame,
+        sizeof(frame),
+        value);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_uint_frame(
-	PGM_P label,
-	unsigned long value,
-	BluetoothCommandUtil2::CommandTypeA commandType,
-	uint8_t commandCode) {
+    BluetoothProgramText label,
+    unsigned long value,
+    BluetoothCommandUtil2::CommandTypeA commandType,
+    uint8_t commandCode) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		label);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        label);
 
-	append_uint(
-		frame,
-		sizeof(frame),
-		value);
+    append_uint(
+        frame,
+        sizeof(frame),
+        value);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType,
-		commandCode);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType,
+        commandCode);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_uint_frame(
-	PGM_P label,
-	unsigned long value,
-	BluetoothCommandUtil2::CommandTypeC commandType) {
+    BluetoothProgramText label,
+    unsigned long value,
+    BluetoothCommandUtil2::CommandTypeC commandType) {
 
-	char frame[frame_size] = {};
+    char frame[frame_size] = {};
 
-	append_program_text(
-		frame,
-		sizeof(frame),
-		label);
+    append_program_text(
+        frame,
+        sizeof(frame),
+        label);
 
-	append_uint(
-		frame,
-		sizeof(frame),
-		value);
+    append_uint(
+        frame,
+        sizeof(frame),
+        value);
 
-	BluetoothCommandUtil2::append_command_type(
-		frame,
-		sizeof(frame),
-		commandType);
+    BluetoothCommandUtil2::append_command_type(
+        frame,
+        sizeof(frame),
+        commandType);
 
-	bluetoothRepository.println(frame);
+    bluetoothRepository.println(frame);
 }
 
 void BluetoothFrameWriter::send_end() {
 
-	send_program_frame(
-		PSTR(""),
-		BluetoothCommandUtil2::EndTrasmission);
+    send_program_frame(
+        BT_TEXT(""),
+        BluetoothCommandUtil2::EndTrasmission);
 }

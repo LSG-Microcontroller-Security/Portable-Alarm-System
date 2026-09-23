@@ -11,9 +11,18 @@
     <Filter Include="commons">
       <UniqueIdentifier>{f0c25143-8e3d-498e-80f3-06fbd9c7d389}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{db4fb0da-6c4f-4064-a172-445e7028e9d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Portable-Alarm-System.ino" />
+    <ClCompile Include="BluetoothDynamicMenu.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="BluetoothFrameWriter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Eagle\ChargeStepUpBoard.brd">
@@ -35,6 +44,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\MicroControllerTeamProject\libraries\MF_Commons\src\mf_commons_commonsLayer.h">
       <Filter>commons</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothCommandUtil2.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothDynamicMenu.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothFrameWriter.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

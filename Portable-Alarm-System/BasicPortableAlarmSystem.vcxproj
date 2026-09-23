@@ -192,6 +192,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BluetoothDynamicMenu.cpp" />
+    <ClCompile Include="BluetoothFrameWriter.cpp" />
     <ClCompile Include="Portable-Alarm-System.ino">
       <FileType>CppCode</FileType>
       <DeploymentContent>true</DeploymentContent>
@@ -205,6 +207,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\MicroControllerTeamProject\libraries\MF_Commons\src\mf_commons_commonsLayer.h" />
+    <ClInclude Include="BluetoothCommandUtil2.h" />
+    <ClInclude Include="BluetoothDynamicMenu.h" />
+    <ClInclude Include="BluetoothFrameWriter.h" />
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

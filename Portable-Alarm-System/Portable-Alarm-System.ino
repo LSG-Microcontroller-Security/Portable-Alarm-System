@@ -69,7 +69,6 @@ const byte _addressExternalInterruptIsOn = 102;
 const byte _addressStartDeviceAddress2 = 104;
 const byte _addressStartDeviceName2 = 119;
 const byte _addressBuzzerIsOn = 134;
-
 uint8_t _isPIRSensorActivated = 0;
 bool _isBlueLedDisable = true;
 bool _isDisableCall = false;
@@ -125,7 +124,6 @@ const int BUFSIZEEXTERNALINTERRUPTISON = 2;
 char _bufExternalInterruptIsON[BUFSIZEEXTERNALINTERRUPTISON];
 const int BUFSIZEBUZZERISON = 2;
 char _bufBuzzerIsON[BUFSIZEBUZZERISON];
-
 void setup() {
 	sim_repository.begin(19200);
 	inizializePins();
@@ -151,7 +149,6 @@ void setup() {
 	pinMode(_pin_pir, INPUT_PULLUP);
 	blinkLedHideMode();
 }
-
 void initilizeEEPromData() {
 	LSG_EEpromRW eeprom_rw;
 	eeprom_rw.eeprom_read_string(_addressStartBufPhoneNumber, _phoneNumber, BUFSIZEPHONENUMBER);
@@ -177,17 +174,14 @@ void initilizeEEPromData() {
 	eeprom_rw.eeprom_read_string(_addressBuzzerIsOn, _bufBuzzerIsON, BUFSIZEBUZZERISON);
 	_isBuzzerOn = atoi(&_bufBuzzerIsON[0]);
 }
-
 void inizializePins() {
 	pinMode(_pin_powerLed, OUTPUT);
 	pinMode(0, INPUT_PULLUP);
 }
-
 void inizializeInterrupts() {
 	attachInterrupt(0, motionTiltInternalInterrupt, RISING);
 	attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
 }
-
 void callSim900() {
 	//Serial.println("Faccio chiamata");
 	if (_isDisableCall) { return; }
@@ -201,19 +195,16 @@ void callSim900() {
 	}
 	sim_repository.call(phoneNumber);
 }
-
 void motionTiltExternalInterrupt() {
 	if ((_isExternalInterruptOn & 0x01U) != 0U /*&& !_isPIRSensorActivated*/) {
 		_isOnExternalMotionDetect = true;
 	}
 }
-
 void motionTiltInternalInterrupt() {
 	if (!_isPIRSensorActivated) {
 		_isOnMotionDetect = true;
 	}
 }
-
 void turnOffBluetoohIfTimeIsOver() {
 	if (_findOutPhonesMode == 0
 		&& (millis() > _timeToTurnOnAlarm)
@@ -223,7 +214,6 @@ void turnOffBluetoohIfTimeIsOver() {
 		bluetooth_repository.turnOffBlueTooth();
 	}
 }
-
 //void turnOnBlueToothIfMotionIsDetected()
 //{
 //	if (_isOnMotionDetect
@@ -236,16 +226,8 @@ void turnOffBluetoohIfTimeIsOver() {
 //		turnOnBlueToothAndSetTurnOffTimer(false);
 //	}
 //}
-
 void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	if (_isDisableCall) { return; }
-	//todo:da mettere in altro luogo.
-	///*if ((_findOutPhonesMode == 1 || _findOutPhonesMode == 2) && _isAlarmOn)
-	//{*/
-	///*	if (_findOutPhonesMode == 1 && !_isAlarmOn)
-	//	{
-	//		_isAlarmOn = true;
-	//	}*/
 	if (!_isFindBTModeActive) {
 		if (_BTVersion == "V3") {
 			bluetooth_repository.set_to_slave_mode();
@@ -256,7 +238,6 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 		}
 		_isFindBTModeActive = true;
 	}
-
 	_isDeviceDetected = false;
 	for (uint8_t i = 0; i < _delayFindMe; i++) {
 		if (_phoneNumbers == 1) {
@@ -264,45 +245,21 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 			if (_isDeviceDetected) {
 				Serial.println("Find first BT");
 				break;
-
 			}
 		}
-
-		/*	if (_findOutPhonesMode == 1)
-			{*/
-
-		if (_phoneNumbers == 2) {
-			_isDeviceDetected = bluetooth_repository.is_device_detected(_bufDeviceAddress2, _bufDeviceName2);
-			if (_isDeviceDetected) {
-				//Serial.println("Find second BT");
-				break;
-			};
-		}
-		//}
 	}
-
-	if (_isDeviceDetected) {
+	if (_isDeviceDetected && _findOutPhonesMode == 1) {
 		blinkLedHideMode();
-		//reedRelaySensorActivity(_pin_reedRelay);
 	}
-	else {
-		if (_findOutPhonesMode == 2) {
-			callSim900();
-			_isMasterMode = false;
-		}
+	else if (!_isDeviceDetected && _findOutPhonesMode == 1) {
+		callSim900();
 	}
-	//return _isDeviceDetected;
-	//}
 }
-
 void loop() {
-	findOutPhonesONAndSetBluetoothInMasterModeActivity();
-	return;
 	readIncomingSMS();
 	if ((millis() > _timeToTurnOnAlarm) && _isAlarmOn != true) {
 		_isAlarmOn = true;
 	}
-
 	//if (!(_isOnMotionDetect && _isAlarmOn))
 	//{
 	//	readIncomingSMS();
@@ -357,7 +314,6 @@ void loop() {
 		BluetoothDynamicMenu::process();
 	}
 }
-
 void motionDetectActivity() {
 	if (_isDisableCall || _findOutPhonesMode == 2 || _isPIRSensorActivated) {
 		_isOnMotionDetect = false;
@@ -440,12 +396,10 @@ void motionDetectActivity() {
 		_isOnExternalMotionDetect = false;
 	}
 }
-
 //void restartBlueTooth()
 //{
 //	Serial.readString();
 //}
-
 void turnOnBlueToothAndSetTurnOffTimer() {
 	Serial.flush();
 	bluetooth_repository.set_to_slave_mode();
@@ -458,7 +412,6 @@ void turnOnBlueToothAndSetTurnOffTimer() {
 	//	}
 	_isMasterMode = false;
 }
-
 void blinkLedHideMode() {
 	if (_isBlueLedDisable) { return; }
 	for (uint8_t i = 0; i < 3; i++) {
@@ -468,7 +421,6 @@ void blinkLedHideMode() {
 		delay(50);
 	}
 }
-
 void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
 	for (uint8_t i = 0; i < numberOfBlinks; i++) {
 		digitalWrite(_pin_powerLed, HIGH);
@@ -477,7 +429,6 @@ void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
 		delay(blinkDelay);
 	}
 }
-
 void buzzerSensorActivity() {
 	for (uint8_t i = 0; i < 15; i++) {
 		tone(_pin_buzzer, 400, 500);
@@ -485,7 +436,6 @@ void buzzerSensorActivity() {
 		noTone(_pin_buzzer);
 	}
 }
-
 void pirSensorActivity() {
 	if (_isDisableCall) { return; }
 	if (_isPIRSensorActivated && _isAlarmOn) {
@@ -513,12 +463,10 @@ void pirSensorActivity() {
 		}
 	}
 }
-
 void reedRelaySensorActivity(uint8_t pin) {
 	pinMode(pin, OUTPUT);
 	blinkLedHideMode();
 }
-
 void internalTemperatureActivity() {
 	if (_delay_for_temperature.IsDelayTimeFinished(true)) {
 		if ((uint8_t)getTemp() > _tempMax) {
@@ -528,7 +476,6 @@ void internalTemperatureActivity() {
 		}
 	}
 }
-
 void voltageActivity() {
 	if (_delay_for_voltage.IsDelayTimeFinished(true)) {
 		_voltageValue = (5.10 / 1023.00) * analogRead(A1);
@@ -540,7 +487,6 @@ void voltageActivity() {
 		}
 	}
 }
-
 void readIncomingSMS() {
 	int smsCount = sim_repository.getSmsCount();
 	if (smsCount <= 0) { return; }
@@ -570,7 +516,6 @@ void readIncomingSMS() {
 		break;
 	}
 }
-
 void deactivateOtherAlarmModes() {
 	_isPIRSensorActivated = 0;
 	_findOutPhonesMode = 0;
@@ -579,7 +524,6 @@ void deactivateOtherAlarmModes() {
 	_isOnMotionDetect = false;
 	_isOnExternalMotionDetect = false;
 }
-
 void listOfSmsCommands(const char* command) {
 	if (command == nullptr || command[0] == '\0' || command[1] == '\0' || command[2] != '\0') { return; }
 	// P1: seleziona il numero di telefono principale per le chiamate.
@@ -681,14 +625,12 @@ void listOfSmsCommands(const char* command) {
 		activateFunctionAlarm();
 	}
 }
-
 void activateFunctionAlarm() {
 	_timeToTurnOnAlarm = 0;
 	_isDisableCall = false;
 	_isAlarmOn = true;
 	callSim900();
 }
-
 double getTemp(void) {
 	unsigned int wADC;
 	double t;
@@ -718,7 +660,6 @@ double getTemp(void) {
 	// The returned temperature is in degrees Celsius.
 	return (t);
 }
-
 //unsigned int offSetTempValue(double externalTemperature)
 //{
 //	unsigned int wADC;

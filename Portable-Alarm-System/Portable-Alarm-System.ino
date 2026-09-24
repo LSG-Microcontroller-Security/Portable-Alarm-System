@@ -298,6 +298,38 @@ void internalMotionDetectActivity() {
 	_isOnMotionDetect = false;
 	attachInterrupt(0, motionTiltInternalInterrupt, RISING);
 }
+void externalMotionDetectActivity() {
+	if (!_isExternalInterruptOn || _isDisableCall || !_isAlarmOn) {
+		_isOnExternalMotionDetect = false;
+		return;
+	}
+	const bool externalContactIsAlarm = digitalRead(3) != _isExtenalInterruptNormalyClosed;
+	// Nessun nuovo interrupt e contatto in stato normale.
+	if (!_isOnExternalMotionDetect && !externalContactIsAlarm) {
+		return;
+	}
+	// L'evento interrupt è stato acquisito.
+	_isOnExternalMotionDetect = false;
+	// CHANGE scatta anche quando il contatto torna normale.
+	// La chiamata parte solo se il pin conferma lo stato di allarme.
+	if (!externalContactIsAlarm) {
+		return;
+	}
+	// Se una chiamata è già attiva, aspettiamo che termini.
+	// Se il contatto rimane in allarme, al giro successivo
+	// externalContactIsAlarm sarà ancora true.
+	if (sim_repository.isCallActive()) {
+		return;
+	}
+	blinkLedHideMode();
+	detachInterrupt(1);
+	_what_is_happened[0] = 'M';
+	DEBUG_SERIAL_PRINTLN(F("External motion detected"));
+	callSim900();
+	_isMasterMode = false;
+	EIFR |= (1 << INTF1);
+	attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
+}
 //void motionDetectActivity() {
 //	if (_isDisableCall || _findOutPhonesMode == 2 || _findOutPhonesMode == 1 || _isPIRSensorActivated) {
 //		_isOnMotionDetect = false;

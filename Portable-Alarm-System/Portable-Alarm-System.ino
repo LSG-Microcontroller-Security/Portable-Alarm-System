@@ -97,7 +97,8 @@ bool _isExtenalInterruptNormalyClosed = true;
 unsigned long _timeToTurnOnAlarm = millis() + 300000;
 //String _apn = "";
 bool _isDeviceDetected = false;
-
+bool _isFindBTModeActive = false;
+char* _BTVersion = "V3";
 const int BUFSIZEPHONENUMBER = 11;
 const int BUFSIZEPHONENUMBERALTERANATIVE = 11;
 const int BUFSIZEPIRSENSORISON = 2;
@@ -239,19 +240,23 @@ void turnOffBluetoohIfTimeIsOver() {
 void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	if (_isDisableCall) { return; }
 	//todo:da mettere in altro luogo.
-
-	/*if ((_findOutPhonesMode == 1 || _findOutPhonesMode == 2) && _isAlarmOn)
-	{*/
-	/*	if (_findOutPhonesMode == 1 && !_isAlarmOn)
-		{
-			_isAlarmOn = true;
-		}*/
-
-	if (_isMasterMode == false) {
-		bluetooth_repository.find_mode_v3();
-		bluetooth_repository.set_to_master_mode();
-		_isMasterMode = true;
+	///*if ((_findOutPhonesMode == 1 || _findOutPhonesMode == 2) && _isAlarmOn)
+	//{*/
+	///*	if (_findOutPhonesMode == 1 && !_isAlarmOn)
+	//	{
+	//		_isAlarmOn = true;
+	//	}*/
+	if (!_isFindBTModeActive) {
+		if (_BTVersion == "V3") {
+			bluetooth_repository.set_to_slave_mode();
+			bluetooth_repository.find_mode_v3();
+		}
+		else {
+			bluetooth_repository.set_to_master_mode();
+		}
+		_isFindBTModeActive = true;
 	}
+
 	_isDeviceDetected = false;
 	for (uint8_t i = 0; i < _delayFindMe; i++) {
 		if (_phoneNumbers == 1) {
@@ -259,7 +264,7 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 			if (_isDeviceDetected) {
 				Serial.println("Find first BT");
 				break;
-				
+
 			}
 		}
 
@@ -383,7 +388,7 @@ void motionDetectActivity() {
 		(_isOnMotionDetect && ((_isExternalInterruptOn & 0x01U) == 0U))
 		|| ((_isOnExternalMotionDetect || (_isExtenalInterruptNormalyClosed ^ digitalRead(3)))
 			&& ((_isExternalInterruptOn & 0x01U) != 0U))
-	)) {
+		)) {
 
 		blinkLedHideMode();
 
@@ -421,325 +426,325 @@ void motionDetectActivity() {
 
 			findOutPhonesONAndSetBluetoothInMasterModeActivity();*/
 
-		
-			EIFR |= 1 << INTF1; //clear external interrupt 1
-			
-				EIFR |= 1 << INTF0; //clear external interrupt 0
-				//EIFR = 0x01;
-				sei();
 
-				attachInterrupt(0, motionTiltInternalInterrupt, RISING);
-				attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
+		EIFR |= 1 << INTF1; //clear external interrupt 1
 
-				_isOnMotionDetect = false;
-				_isOnExternalMotionDetect = false;
-			}
-		}
+		EIFR |= 1 << INTF0; //clear external interrupt 0
+		//EIFR = 0x01;
+		sei();
 
-		//void restartBlueTooth()
-		//{
-		//	Serial.readString();
-		//}
+		attachInterrupt(0, motionTiltInternalInterrupt, RISING);
+		attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
 
-		void turnOnBlueToothAndSetTurnOffTimer() {
-			Serial.flush();
-			bluetooth_repository.set_to_slave_mode();
-			//if (_findOutPhonesMode == 0 || isFromSMS)
-			//{
-			bluetooth_repository.set_to_slave_mode();
-			bluetooth_repository.turnOnBlueTooth();
-			_timeToTurnOnAlarm = millis() + 300000;
-			_isAlarmOn = false;
-			//	}
-			_isMasterMode = false;
-		}
+		_isOnMotionDetect = false;
+		_isOnExternalMotionDetect = false;
+	}
+}
 
-		void blinkLedHideMode() {
-			if (_isBlueLedDisable) { return; }
-			for (uint8_t i = 0; i < 3; i++) {
-				digitalWrite(_pin_powerLed, HIGH);
-				delay(50);
-				digitalWrite(_pin_powerLed, LOW);
-				delay(50);
-			}
-		}
+//void restartBlueTooth()
+//{
+//	Serial.readString();
+//}
 
-		void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
-			for (uint8_t i = 0; i < numberOfBlinks; i++) {
-				digitalWrite(_pin_powerLed, HIGH);
-				delay(blinkDelay);
-				digitalWrite(_pin_powerLed, LOW);
-				delay(blinkDelay);
-			}
-		}
+void turnOnBlueToothAndSetTurnOffTimer() {
+	Serial.flush();
+	bluetooth_repository.set_to_slave_mode();
+	//if (_findOutPhonesMode == 0 || isFromSMS)
+	//{
+	bluetooth_repository.set_to_slave_mode();
+	bluetooth_repository.turnOnBlueTooth();
+	_timeToTurnOnAlarm = millis() + 300000;
+	_isAlarmOn = false;
+	//	}
+	_isMasterMode = false;
+}
 
-		void buzzerSensorActivity() {
-			for (uint8_t i = 0; i < 15; i++) {
-				tone(_pin_buzzer, 400, 500);
-				delay(1000);
-				noTone(_pin_buzzer);
-			}
-		}
+void blinkLedHideMode() {
+	if (_isBlueLedDisable) { return; }
+	for (uint8_t i = 0; i < 3; i++) {
+		digitalWrite(_pin_powerLed, HIGH);
+		delay(50);
+		digitalWrite(_pin_powerLed, LOW);
+		delay(50);
+	}
+}
 
-		void pirSensorActivity() {
-			if (_isDisableCall) { return; }
-			if (_isPIRSensorActivated && _isAlarmOn) {
-				if (digitalRead(_pin_pir)) {
-					blinkLedHideMode();
-					_what_is_happened[0] = 'P';
-					DEBUG_SERIAL_PRINTLN(F("pir sensor"));
-					if (_findOutPhonesMode == 1) {
-						if (!_isDeviceDetected) {
-							if (_isBuzzerOn) {
-								buzzerSensorActivity();
-							}
-							callSim900();
-							_isMasterMode = false;
-							//reedRelaySensorActivity(_pin_reedRelay);
-						}
-					}
-					else {
-						if (_isBuzzerOn) {
-							buzzerSensorActivity();
-						}
-						callSim900();
-						_isMasterMode = false;
-					}
-				}
-			}
-		}
+void blinkLed(uint8_t blinkDelay, uint8_t numberOfBlinks) {
+	for (uint8_t i = 0; i < numberOfBlinks; i++) {
+		digitalWrite(_pin_powerLed, HIGH);
+		delay(blinkDelay);
+		digitalWrite(_pin_powerLed, LOW);
+		delay(blinkDelay);
+	}
+}
 
-		void reedRelaySensorActivity(uint8_t pin) {
-			pinMode(pin, OUTPUT);
+void buzzerSensorActivity() {
+	for (uint8_t i = 0; i < 15; i++) {
+		tone(_pin_buzzer, 400, 500);
+		delay(1000);
+		noTone(_pin_buzzer);
+	}
+}
+
+void pirSensorActivity() {
+	if (_isDisableCall) { return; }
+	if (_isPIRSensorActivated && _isAlarmOn) {
+		if (digitalRead(_pin_pir)) {
 			blinkLedHideMode();
-		}
-
-		void internalTemperatureActivity() {
-			if (_delay_for_temperature.IsDelayTimeFinished(true)) {
-				if ((uint8_t)getTemp() > _tempMax) {
-					_what_is_happened[0] = 'T';
-					DEBUG_SERIAL_PRINTLN(F("Temperature high."));
+			_what_is_happened[0] = 'P';
+			DEBUG_SERIAL_PRINTLN(F("pir sensor"));
+			if (_findOutPhonesMode == 1) {
+				if (!_isDeviceDetected) {
+					if (_isBuzzerOn) {
+						buzzerSensorActivity();
+					}
 					callSim900();
+					_isMasterMode = false;
+					//reedRelaySensorActivity(_pin_reedRelay);
 				}
 			}
-		}
-
-		void voltageActivity() {
-			if (_delay_for_voltage.IsDelayTimeFinished(true)) {
-				_voltageValue = (5.10 / 1023.00) * analogRead(A1);
-				_voltageMinValue = 3.25;
-				if (_voltageValue < _voltageMinValue) {
-					_what_is_happened[0] = 'V';
-					DEBUG_SERIAL_PRINTLN(F("Voltage low."));
-					callSim900();
+			else {
+				if (_isBuzzerOn) {
+					buzzerSensorActivity();
 				}
+				callSim900();
+				_isMasterMode = false;
 			}
 		}
+	}
+}
 
-		void readIncomingSMS() {
-			int smsCount = sim_repository.getSmsCount();
-			if (smsCount <= 0) { return; }
-			char sender[16];
-			char message[12];
-			uint8_t maxIndex = static_cast<uint8_t>(smsCount + 10);
-			for (uint8_t i = 1; i <= maxIndex; i++) {
-				if (!sim_repository.readSms(i, sender, sizeof(sender), message, sizeof(message))) { continue; }
-				DEBUG_SERIAL_PRINT(F("SMS ricevuto ["));
-				DEBUG_SERIAL_PRINT(i);
-				DEBUG_SERIAL_PRINT(F("] da "));
-				DEBUG_SERIAL_PRINT(sender);
-				DEBUG_SERIAL_PRINT(F(": "));
-				DEBUG_SERIAL_PRINTLN(message);
-				if (!sim_repository.deleteSmsAt(i)) {
-					DEBUG_SERIAL_PRINTLN(F("Cancellazione SMS non riuscita"));
-					return;
-				}
-				blinkLedHideMode();
-				const char* number = sender;
-				if (strncmp(number, "+39", 3) == 0) { number += 3; }
-				if (strcmp(number, _phoneNumber) != 0 && strcmp(number, _phoneNumberAlternative) != 0) {
-					DEBUG_SERIAL_PRINTLN(F("Numero errato"));
-					continue;
-				}
-				listOfSmsCommands(message);
-				break;
-			}
-		}
+void reedRelaySensorActivity(uint8_t pin) {
+	pinMode(pin, OUTPUT);
+	blinkLedHideMode();
+}
 
-		void deactivateOtherAlarmModes() {
-			_isPIRSensorActivated = 0;
-			_findOutPhonesMode = 0;
-			_isBuzzerOn = 0;
-			_isExternalInterruptOn = 0;
-			_isOnMotionDetect = false;
-			_isOnExternalMotionDetect = false;
-		}
-
-		void listOfSmsCommands(const char* command) {
-			if (command == nullptr || command[0] == '\0' || command[1] == '\0' || command[2] != '\0') { return; }
-			// P1: seleziona il numero di telefono principale per le chiamate.
-			if (command[0] == 'P' && command[1] == '1') {
-				_phoneNumbers = 1;
-				callSim900();
-			}
-			// P2: seleziona il numero di telefono alternativo per le chiamate.
-			if (command[0] == 'P' && command[1] == '2') {
-				_phoneNumbers = 2;
-				callSim900();
-			}
-			// Rc: abilita la risposta automatica alle chiamate in ingresso.
-			if (command[0] == 'R' && command[1] == 'c') {
-				sim_repository.enableIncomingCall(1);
-			}
-			// Rs: disabilita la risposta automatica e richiama il numero selezionato.
-			if (command[0] == 'R' && command[1] == 's') {
-				sim_repository.disableIncomingCall();
-				callSim900();
-			}
-			// Dc: disabilita le chiamate di allarme e chiude quella eventualmente in corso.
-			if (command[0] == 'D' && command[1] == 'c') {
-				_isDisableCall = true;
-				_isExternalInterruptOn &= static_cast<uint8_t>(~0x02U);
-				sim_repository.hangUp();
-			}
-			// Ab: accende il Bluetooth e avvia il relativo timer di spegnimento.
-			if (command[0] == 'A' && command[1] == 'b') {
-				turnOnBlueToothAndSetTurnOffTimer();
-				blinkLed(500, 3);
-			}
-			// Al: abilita i lampeggi del LED di alimentazione.
-			if (command[0] == 'A' && command[1] == 'l') {
-				_isBlueLedDisable = false;
-				blinkLed(500, 3);
-			}
-			// Ck: richiama il numero selezionato per verificare il sistema.
-			if (command[0] == 'C' && command[1] == 'k') {
-				callSim900();
-			}
-			// Nv: attiva la modalità Non vedermi con ricerca Bluetooth del telefono.
-			if (command[0] == 'N' && command[1] == 'v') {
-				deactivateOtherAlarmModes();
-				_findOutPhonesMode = 1;
-				_isBTSleepON = false;
-				_timeToTurnOnAlarm = 0;
-				blinkLed(500, 3);
-			}
-			// Eo: attiva l'allarme con contatto esterno normalmente aperto.
-			if (command[0] == 'E' && command[1] == 'o') {
-				deactivateOtherAlarmModes();
-				_isBTSleepON = true;
-				_isExternalInterruptOn = 1;
-				activateFunctionAlarm();
-				bluetooth_repository.turnOffBlueTooth();
-				_isExtenalInterruptNormalyClosed = false;
-			}
-			// Ex: disabilita l'allarme del contatto esterno.
-			if (command[0] == 'E' && command[1] == 'x') {
-				_isExternalInterruptOn = 0;
-			}
-			// Ec: attiva l'allarme con contatto esterno normalmente chiuso.
-			if (command[0] == 'E' && command[1] == 'c') {
-				deactivateOtherAlarmModes();
-				_isBTSleepON = true;
-				_isExternalInterruptOn = 1;
-				_timeToTurnOnAlarm = 0;
-				_isDisableCall = false;
-				_isAlarmOn = true;
-				bluetooth_repository.turnOffBlueTooth();
-				_isExtenalInterruptNormalyClosed = true;
-			}
-			// Md: attiva il rilevamento movimento o inclinazione senza Bluetooth.
-			if (command[0] == 'M' && command[1] == 'd') {
-				deactivateOtherAlarmModes();
-				_isBTSleepON = true;
-				activateFunctionAlarm();
-				bluetooth_repository.turnOffBlueTooth();
-			}
-			// Bz: abilita il buzzer, se presente nell'hardware.
-			if (command[0] == 'B' && command[1] == 'z') {
-				_isBuzzerOn = 1;
-				blinkLed(500, 3);
-			}
-			// Wc: attiva il sensore PIR senza Bluetooth.
-			if (command[0] == 'W' && command[1] == 'c') {
-				deactivateOtherAlarmModes();
-				_isBTSleepON = true;
-				_isPIRSensorActivated = 1;
-				activateFunctionAlarm();
-				bluetooth_repository.turnOffBlueTooth();
-			}
-			// Fm: attiva la modalità Trova il dispositivo.
-			if (command[0] == 'F' && command[1] == 'm') {
-				deactivateOtherAlarmModes();
-				_isBTSleepON = false;
-				_findOutPhonesMode = 2;
-				activateFunctionAlarm();
-			}
-		}
-
-		void activateFunctionAlarm() {
-			_timeToTurnOnAlarm = 0;
-			_isDisableCall = false;
-			_isAlarmOn = true;
+void internalTemperatureActivity() {
+	if (_delay_for_temperature.IsDelayTimeFinished(true)) {
+		if ((uint8_t)getTemp() > _tempMax) {
+			_what_is_happened[0] = 'T';
+			DEBUG_SERIAL_PRINTLN(F("Temperature high."));
 			callSim900();
 		}
+	}
+}
 
-		double getTemp(void) {
-			unsigned int wADC;
-			double t;
-
-			// The internal temperature has to be used
-			// with the internal reference of 1.1V.
-			// Channel 8 can not be selected with
-			// the analogRead function yet.
-
-			// Set the internal reference and mux.
-			ADMUX = (_BV(REFS1) | _BV(REFS0) | _BV(MUX3));
-			ADCSRA |= _BV(ADEN);  // enable the ADC
-
-			delay(20);            // wait for voltages to become stable.
-
-			ADCSRA |= _BV(ADSC);  // Start the ADC
-
-			// Detect end-of-conversion
-			while (bit_is_set(ADCSRA, ADSC));
-
-			// Reading register "ADCW" takes care of how to read ADCL and ADCH.
-			wADC = ADCW;
-
-			// The offset of 324.31 could be wrong. It is just an indication.
-			t = (wADC - _offSetTempValue) / 1.22;
-
-			// The returned temperature is in degrees Celsius.
-			return (t);
+void voltageActivity() {
+	if (_delay_for_voltage.IsDelayTimeFinished(true)) {
+		_voltageValue = (5.10 / 1023.00) * analogRead(A1);
+		_voltageMinValue = 3.25;
+		if (_voltageValue < _voltageMinValue) {
+			_what_is_happened[0] = 'V';
+			DEBUG_SERIAL_PRINTLN(F("Voltage low."));
+			callSim900();
 		}
+	}
+}
 
-		//unsigned int offSetTempValue(double externalTemperature)
-		//{
-		//	unsigned int wADC;
-		//	double t;
-		//	// The internal temperature has to be used
-		//	// with the internal reference of 1.1V.
-		//	// Channel 8 can not be selected with
-		//	// the analogRead function yet.
-		//
-		//	// Set the internal reference and mux.
-		//	ADMUX = (_BV(REFS1) | _BV(REFS0) | _BV(MUX3));
-		//	ADCSRA |= _BV(ADEN);  // enable the ADC
-		//
-		//	delay(20);            // wait for voltages to become stable.
-		//
-		//	ADCSRA |= _BV(ADSC);  // Start the ADC
-		//
-		//						  // Detect end-of-conversion
-		//	while (bit_is_set(ADCSRA, ADSC));
-		//
-		//	// Reading register "ADCW" takes care of how to read ADCL and ADCH.
-		//	wADC = ADCW;
-		//
-		//	// The offset of 324.31 could be wrong. It is just an indication.
-		//	//t = (wADC - _offSetTempValue) / 1.22;
-		//
-		//	// The returned temperature is in degrees Celsius.
-		//	return (-(externalTemperature * 1.22) + wADC);
-		//}
+void readIncomingSMS() {
+	int smsCount = sim_repository.getSmsCount();
+	if (smsCount <= 0) { return; }
+	char sender[16];
+	char message[12];
+	uint8_t maxIndex = static_cast<uint8_t>(smsCount + 10);
+	for (uint8_t i = 1; i <= maxIndex; i++) {
+		if (!sim_repository.readSms(i, sender, sizeof(sender), message, sizeof(message))) { continue; }
+		DEBUG_SERIAL_PRINT(F("SMS ricevuto ["));
+		DEBUG_SERIAL_PRINT(i);
+		DEBUG_SERIAL_PRINT(F("] da "));
+		DEBUG_SERIAL_PRINT(sender);
+		DEBUG_SERIAL_PRINT(F(": "));
+		DEBUG_SERIAL_PRINTLN(message);
+		if (!sim_repository.deleteSmsAt(i)) {
+			DEBUG_SERIAL_PRINTLN(F("Cancellazione SMS non riuscita"));
+			return;
+		}
+		blinkLedHideMode();
+		const char* number = sender;
+		if (strncmp(number, "+39", 3) == 0) { number += 3; }
+		if (strcmp(number, _phoneNumber) != 0 && strcmp(number, _phoneNumberAlternative) != 0) {
+			DEBUG_SERIAL_PRINTLN(F("Numero errato"));
+			continue;
+		}
+		listOfSmsCommands(message);
+		break;
+	}
+}
+
+void deactivateOtherAlarmModes() {
+	_isPIRSensorActivated = 0;
+	_findOutPhonesMode = 0;
+	_isBuzzerOn = 0;
+	_isExternalInterruptOn = 0;
+	_isOnMotionDetect = false;
+	_isOnExternalMotionDetect = false;
+}
+
+void listOfSmsCommands(const char* command) {
+	if (command == nullptr || command[0] == '\0' || command[1] == '\0' || command[2] != '\0') { return; }
+	// P1: seleziona il numero di telefono principale per le chiamate.
+	if (command[0] == 'P' && command[1] == '1') {
+		_phoneNumbers = 1;
+		callSim900();
+	}
+	// P2: seleziona il numero di telefono alternativo per le chiamate.
+	if (command[0] == 'P' && command[1] == '2') {
+		_phoneNumbers = 2;
+		callSim900();
+	}
+	// Rc: abilita la risposta automatica alle chiamate in ingresso.
+	if (command[0] == 'R' && command[1] == 'c') {
+		sim_repository.enableIncomingCall(1);
+	}
+	// Rs: disabilita la risposta automatica e richiama il numero selezionato.
+	if (command[0] == 'R' && command[1] == 's') {
+		sim_repository.disableIncomingCall();
+		callSim900();
+	}
+	// Dc: disabilita le chiamate di allarme e chiude quella eventualmente in corso.
+	if (command[0] == 'D' && command[1] == 'c') {
+		_isDisableCall = true;
+		_isExternalInterruptOn &= static_cast<uint8_t>(~0x02U);
+		sim_repository.hangUp();
+	}
+	// Ab: accende il Bluetooth e avvia il relativo timer di spegnimento.
+	if (command[0] == 'A' && command[1] == 'b') {
+		turnOnBlueToothAndSetTurnOffTimer();
+		blinkLed(500, 3);
+	}
+	// Al: abilita i lampeggi del LED di alimentazione.
+	if (command[0] == 'A' && command[1] == 'l') {
+		_isBlueLedDisable = false;
+		blinkLed(500, 3);
+	}
+	// Ck: richiama il numero selezionato per verificare il sistema.
+	if (command[0] == 'C' && command[1] == 'k') {
+		callSim900();
+	}
+	// Nv: attiva la modalità Non vedermi con ricerca Bluetooth del telefono.
+	if (command[0] == 'N' && command[1] == 'v') {
+		deactivateOtherAlarmModes();
+		_findOutPhonesMode = 1;
+		_isBTSleepON = false;
+		_timeToTurnOnAlarm = 0;
+		blinkLed(500, 3);
+	}
+	// Eo: attiva l'allarme con contatto esterno normalmente aperto.
+	if (command[0] == 'E' && command[1] == 'o') {
+		deactivateOtherAlarmModes();
+		_isBTSleepON = true;
+		_isExternalInterruptOn = 1;
+		activateFunctionAlarm();
+		bluetooth_repository.turnOffBlueTooth();
+		_isExtenalInterruptNormalyClosed = false;
+	}
+	// Ex: disabilita l'allarme del contatto esterno.
+	if (command[0] == 'E' && command[1] == 'x') {
+		_isExternalInterruptOn = 0;
+	}
+	// Ec: attiva l'allarme con contatto esterno normalmente chiuso.
+	if (command[0] == 'E' && command[1] == 'c') {
+		deactivateOtherAlarmModes();
+		_isBTSleepON = true;
+		_isExternalInterruptOn = 1;
+		_timeToTurnOnAlarm = 0;
+		_isDisableCall = false;
+		_isAlarmOn = true;
+		bluetooth_repository.turnOffBlueTooth();
+		_isExtenalInterruptNormalyClosed = true;
+	}
+	// Md: attiva il rilevamento movimento o inclinazione senza Bluetooth.
+	if (command[0] == 'M' && command[1] == 'd') {
+		deactivateOtherAlarmModes();
+		_isBTSleepON = true;
+		activateFunctionAlarm();
+		bluetooth_repository.turnOffBlueTooth();
+	}
+	// Bz: abilita il buzzer, se presente nell'hardware.
+	if (command[0] == 'B' && command[1] == 'z') {
+		_isBuzzerOn = 1;
+		blinkLed(500, 3);
+	}
+	// Wc: attiva il sensore PIR senza Bluetooth.
+	if (command[0] == 'W' && command[1] == 'c') {
+		deactivateOtherAlarmModes();
+		_isBTSleepON = true;
+		_isPIRSensorActivated = 1;
+		activateFunctionAlarm();
+		bluetooth_repository.turnOffBlueTooth();
+	}
+	// Fm: attiva la modalità Trova il dispositivo.
+	if (command[0] == 'F' && command[1] == 'm') {
+		deactivateOtherAlarmModes();
+		_isBTSleepON = false;
+		_findOutPhonesMode = 2;
+		activateFunctionAlarm();
+	}
+}
+
+void activateFunctionAlarm() {
+	_timeToTurnOnAlarm = 0;
+	_isDisableCall = false;
+	_isAlarmOn = true;
+	callSim900();
+}
+
+double getTemp(void) {
+	unsigned int wADC;
+	double t;
+
+	// The internal temperature has to be used
+	// with the internal reference of 1.1V.
+	// Channel 8 can not be selected with
+	// the analogRead function yet.
+
+	// Set the internal reference and mux.
+	ADMUX = (_BV(REFS1) | _BV(REFS0) | _BV(MUX3));
+	ADCSRA |= _BV(ADEN);  // enable the ADC
+
+	delay(20);            // wait for voltages to become stable.
+
+	ADCSRA |= _BV(ADSC);  // Start the ADC
+
+	// Detect end-of-conversion
+	while (bit_is_set(ADCSRA, ADSC));
+
+	// Reading register "ADCW" takes care of how to read ADCL and ADCH.
+	wADC = ADCW;
+
+	// The offset of 324.31 could be wrong. It is just an indication.
+	t = (wADC - _offSetTempValue) / 1.22;
+
+	// The returned temperature is in degrees Celsius.
+	return (t);
+}
+
+//unsigned int offSetTempValue(double externalTemperature)
+//{
+//	unsigned int wADC;
+//	double t;
+//	// The internal temperature has to be used
+//	// with the internal reference of 1.1V.
+//	// Channel 8 can not be selected with
+//	// the analogRead function yet.
+//
+//	// Set the internal reference and mux.
+//	ADMUX = (_BV(REFS1) | _BV(REFS0) | _BV(MUX3));
+//	ADCSRA |= _BV(ADEN);  // enable the ADC
+//
+//	delay(20);            // wait for voltages to become stable.
+//
+//	ADCSRA |= _BV(ADSC);  // Start the ADC
+//
+//						  // Detect end-of-conversion
+//	while (bit_is_set(ADCSRA, ADSC));
+//
+//	// Reading register "ADCW" takes care of how to read ADCL and ADCH.
+//	wADC = ADCW;
+//
+//	// The offset of 324.31 could be wrong. It is just an indication.
+//	//t = (wADC - _offSetTempValue) / 1.22;
+//
+//	// The returned temperature is in degrees Celsius.
+//	return (-(externalTemperature * 1.22) + wADC);
+//}

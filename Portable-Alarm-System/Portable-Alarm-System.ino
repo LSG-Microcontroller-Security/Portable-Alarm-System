@@ -206,11 +206,8 @@ void motionTiltInternalInterrupt() {
 	}
 }
 void turnOffBluetoohIfTimeIsOver() {
-	if (_findOutPhonesMode == 0
-		&& (millis() > _timeToTurnOnAlarm)
-		&& bluetooth_repository.isBluetoothOn()
-		&& _isBTSleepON
-		) {
+	if (_findOutPhonesMode == 0 && (millis() > _timeToTurnOnAlarm)
+		&& (bluetooth_repository.isBluetoothOn() && _isBTSleepON)) {
 		bluetooth_repository.turnOffBlueTooth();
 	}
 }
@@ -260,50 +257,23 @@ void loop() {
 	if ((millis() > _timeToTurnOnAlarm) && _isAlarmOn != true) {
 		_isAlarmOn = true;
 	}
-	//if (!(_isOnMotionDetect && _isAlarmOn))
-	//{
-	//	readIncomingSMS();
-	//}
-
-	//if (_delayForSignalStrength->IsDelayTimeFinished(true))
-	//{
-	//	getSignalStrength();
-	//}
-
 	if (_isAlarmOn && (_findOutPhonesMode == 1 || _findOutPhonesMode == 2)) {
 		findOutPhonesONAndSetBluetoothInMasterModeActivity();
 	}
 
-	//if (_delayForCallNumbers->IsDelayTimeFinished(true))
-	//{
-	//	_callNumbers = 0;
-	//}
-
 	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		turnOffBluetoohIfTimeIsOver();
 	}
-
 	/*if (!(_isOnMotionDetect && _isAlarmOn))
 	{
 		turnOnBlueToothIfMotionIsDetected();
 	}*/
-
 	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		internalTemperatureActivity();
 	}
-
 	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		voltageActivity();
 	}
-
-	//if (_isPositionEnable)
-	//{
-	//	if (_delayForGetCoordinates->IsDelayTimeFinished(true))
-	//	{
-	//		//getCoordinates();
-	//	}
-	//}
-
 	if (!(_isOnMotionDetect && _isAlarmOn)) {
 		pirSensorActivity();
 	}
@@ -315,7 +285,7 @@ void loop() {
 	}
 }
 void motionDetectActivity() {
-	if (_isDisableCall || _findOutPhonesMode == 2 || _isPIRSensorActivated) {
+	if (_isDisableCall || _findOutPhonesMode == 2 || _findOutPhonesMode == 1 || _isPIRSensorActivated) {
 		_isOnMotionDetect = false;
 		return;
 	}
@@ -449,8 +419,6 @@ void pirSensorActivity() {
 						buzzerSensorActivity();
 					}
 					callSim900();
-					_isMasterMode = false;
-					//reedRelaySensorActivity(_pin_reedRelay);
 				}
 			}
 			else {
@@ -458,7 +426,6 @@ void pirSensorActivity() {
 					buzzerSensorActivity();
 				}
 				callSim900();
-				_isMasterMode = false;
 			}
 		}
 	}

@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 #include <MyBlueTooth.h>
 #ifndef EEPROM_INITIALIZATION_ENABLED
-#define EEPROM_INITIALIZATION_ENABLED 1U
+#define EEPROM_INITIALIZATION_ENABLED 0U
 #endif
 const uint8_t configuration_version_address = 0U;
 const uint8_t configuration_version = 1U;
@@ -33,7 +33,6 @@ const unsigned long serial_monitor_baud_rate = 38400UL;
 const size_t bluetooth_response_buffer_size = 64U;
 const unsigned long bluetooth_response_timeout_ms = 1500UL;
 const unsigned long bluetooth_response_end_delay_ms = 100UL;
-
 
 #if EEPROM_INITIALIZATION_ENABLED
 void clear_eeprom() {

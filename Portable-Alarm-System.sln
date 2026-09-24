@@ -20,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Portable-Alarm-System", "Po
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Portable-Alarm-Test", "Portable-Alarm-Test\PortableAlarmTest.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlueTooth-Test-connection", "BlueTooth-Test-connection\BlueTooth-Test-connection.vcxproj", "{331DDAB2-DF22-4730-83D6-D98A06B700E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -66,6 +68,24 @@ Global
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x64.Build.0 = Release|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|ARM.ActiveCfg = Debug|ARM
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|ARM.Build.0 = Debug|ARM
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|ARM.Deploy.0 = Debug|ARM
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|x64.ActiveCfg = Debug|x64
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|x64.Build.0 = Debug|x64
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|x64.Deploy.0 = Debug|x64
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|x86.ActiveCfg = Debug|x86
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|x86.Build.0 = Debug|x86
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Debug|x86.Deploy.0 = Debug|x86
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|ARM.ActiveCfg = Release|ARM
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|ARM.Build.0 = Release|ARM
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|ARM.Deploy.0 = Release|ARM
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|x64.ActiveCfg = Release|x64
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|x64.Build.0 = Release|x64
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|x64.Deploy.0 = Release|x64
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|x86.ActiveCfg = Release|x86
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|x86.Build.0 = Release|x86
+		{331DDAB2-DF22-4730-83D6-D98A06B700E8}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

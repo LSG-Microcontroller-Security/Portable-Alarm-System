@@ -82,7 +82,7 @@ char _phoneNumber[11];
 char _phoneNumberAlternative[11];
 char _what_is_happened[2] = {};
 uint8_t _isBTSleepON = 1;
-uint8_t _isExternalInterruptOn = 0;
+bool _isExternalInterruptOn = false;
 uint8_t _isBuzzerOn = 0;
 uint8_t _phoneNumbers = 0;
 uint8_t _findOutPhonesMode = 0;
@@ -172,6 +172,7 @@ void loop() {
 	}
 	pirSensorActivity();
 	internalMotionDetectActivity();
+
 	if (!_isAlarmOn) {
 		BluetoothDynamicMenu::process();
 	}
@@ -223,7 +224,7 @@ void callSim900() {
 	sim_repository.call(phoneNumber);
 }
 void motionTiltExternalInterrupt() {
-	if ((_isExternalInterruptOn & 0x01U) != 0U /*&& !_isPIRSensorActivated*/) {
+	if (_isExternalInterruptOn) {
 		_isOnExternalMotionDetect = true;
 	}
 }
@@ -557,20 +558,20 @@ void listOfSmsCommands(const char* command) {
 	if (command[0] == 'E' && command[1] == 'o') {
 		deactivateOtherAlarmModes();
 		_isBTSleepON = true;
-		_isExternalInterruptOn = 1;
+		_isExternalInterruptOn = true;
 		activateFunctionAlarm();
 		bluetooth_repository.turnOffBlueTooth();
 		_isExtenalInterruptNormalyClosed = false;
 	}
 	// Ex: disabilita l'allarme del contatto esterno.
 	if (command[0] == 'E' && command[1] == 'x') {
-		_isExternalInterruptOn = 0;
+		_isExternalInterruptOn = false;
 	}
 	// Ec: attiva l'allarme con contatto esterno normalmente chiuso.
 	if (command[0] == 'E' && command[1] == 'c') {
 		deactivateOtherAlarmModes();
 		_isBTSleepON = true;
-		_isExternalInterruptOn = 1;
+		_isExternalInterruptOn = true;
 		_timeToTurnOnAlarm = 0;
 		_isDisableCall = false;
 		_isAlarmOn = true;

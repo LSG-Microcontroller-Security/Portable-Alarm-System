@@ -87,7 +87,7 @@ uint8_t _isBuzzerOn = 0;
 uint8_t _phoneNumbers = 0;
 uint8_t _findOutPhonesMode = 0;
 uint8_t _tempMax = 0;
-uint8_t _delayFindMe = 1;
+uint8_t _delayFindMe = 2;
 unsigned int _offSetTempValue = 324;
 float _voltageValue = 0;
 float _voltageMinValue = 0;
@@ -148,6 +148,33 @@ void setup() {
 	sim_repository.deleteAllSms();
 	pinMode(_pin_pir, INPUT_PULLUP);
 	blinkLedHideMode();
+}
+void loop() {
+	readIncomingSMS();
+	if ((millis() > _timeToTurnOnAlarm) && _isAlarmOn != true) {
+		_isAlarmOn = true;
+	}
+	if (_isAlarmOn && (_findOutPhonesMode == 1 || _findOutPhonesMode == 2)) {
+		findOutPhonesONAndSetBluetoothInMasterModeActivity();
+	}
+	if (!(_isOnMotionDetect && _isAlarmOn)) {
+		turnOffBluetoohIfTimeIsOver();
+	}
+	/*if (!(_isOnMotionDetect && _isAlarmOn))
+	{
+		turnOnBlueToothIfMotionIsDetected();
+	}*/
+	if (!(_isOnMotionDetect)) {
+		internalTemperatureActivity();
+	}
+	if (!(_isOnMotionDetect)) {
+		voltageActivity();
+	}
+	pirSensorActivity();
+	motionDetectActivity();
+	if (!_isAlarmOn) {
+		BluetoothDynamicMenu::process();
+	}
 }
 void initilizeEEPromData() {
 	LSG_EEpromRW eeprom_rw;
@@ -240,7 +267,7 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 		if (_phoneNumbers == 1) {
 			_isDeviceDetected = bluetooth_repository.is_device_detected(_bufDeviceAddress, _bufDeviceName);
 			if (_isDeviceDetected) {
-				Serial.println("Find first BT");
+				//Serial.println("Find first BT");
 				break;
 			}
 		}
@@ -250,38 +277,6 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	}
 	else if (!_isDeviceDetected && _findOutPhonesMode == 1) {
 		callSim900();
-	}
-}
-void loop() {
-	readIncomingSMS();
-	if ((millis() > _timeToTurnOnAlarm) && _isAlarmOn != true) {
-		_isAlarmOn = true;
-	}
-	if (_isAlarmOn && (_findOutPhonesMode == 1 || _findOutPhonesMode == 2)) {
-		findOutPhonesONAndSetBluetoothInMasterModeActivity();
-	}
-
-	if (!(_isOnMotionDetect && _isAlarmOn)) {
-		turnOffBluetoohIfTimeIsOver();
-	}
-	/*if (!(_isOnMotionDetect && _isAlarmOn))
-	{
-		turnOnBlueToothIfMotionIsDetected();
-	}*/
-	if (!(_isOnMotionDetect && _isAlarmOn)) {
-		internalTemperatureActivity();
-	}
-	if (!(_isOnMotionDetect && _isAlarmOn)) {
-		voltageActivity();
-	}
-	if (!(_isOnMotionDetect && _isAlarmOn)) {
-		pirSensorActivity();
-	}
-
-	motionDetectActivity();
-
-	if (!(_isOnMotionDetect && _isAlarmOn)) {
-		BluetoothDynamicMenu::process();
 	}
 }
 void motionDetectActivity() {

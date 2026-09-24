@@ -7,6 +7,11 @@
 - Do not rename existing files, classes, methods, or public interfaces unless explicitly requested.
 - Do not rename existing files, classes, methods, or public interfaces unless explicitly requested.
 - 
+## Library include resolution
+- Before modifying any local or external library file, inspect the `#include` used by the consuming source file.
+- Resolve that include using the project build configuration and include paths, then identify the implementation file actually compiled. Do not choose a file by name alone.
+- Confirm whether the resolved implementation belongs to this project or an external library before editing it. If resolution is ambiguous, ask for the exact path.
+
 ## Memory
 - Avoid Arduino String in new code.
 - Avoid dynamic allocation unless strictly necessary.

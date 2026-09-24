@@ -171,7 +171,7 @@ void loop() {
 		voltageActivity();
 	}
 	pirSensorActivity();
-	motionDetectActivity();
+	internalMotionDetectActivity();
 	if (!_isAlarmOn) {
 		BluetoothDynamicMenu::process();
 	}
@@ -279,88 +279,106 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 		callSim900();
 	}
 }
-void motionDetectActivity() {
+void internalMotionDetectActivity() {
 	if (_isDisableCall || _findOutPhonesMode == 2 || _findOutPhonesMode == 1 || _isPIRSensorActivated) {
 		_isOnMotionDetect = false;
 		return;
 	}
-	if ((_isExternalInterruptOn & 0x01U) != 0U && !(_isExtenalInterruptNormalyClosed ^ digitalRead(3))) {
-		if ((_isExternalInterruptOn & 0x02U) != 0U) {
-			_isExternalInterruptOn &= static_cast<uint8_t>(~0x02U);
-			sim_repository.hangUp();
-		}
-		_isOnExternalMotionDetect = false;
-	}
-	if ((_isExternalInterruptOn & 0x01U) != 0U && (_isExtenalInterruptNormalyClosed ^ digitalRead(3)) && sim_repository.isCallActive()) {
-		delay(250UL);
+	if (!_isAlarmOn || !_isOnMotionDetect) {
 		return;
 	}
-
-	//if ((millis() - _millsStart) > _sensitivityAlarm)
-	//{
-	//	_millsStart = 0;
-	//	_isFirstTilt = true;
-	//}
-
-	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && _isExternalInterruptOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))))
-	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))) || _isExternalInterruptOn))	/*if(true)*/
-
-	if (_isAlarmOn && (
-		(_isOnMotionDetect && ((_isExternalInterruptOn & 0x01U) == 0U))
-		|| ((_isOnExternalMotionDetect || (_isExtenalInterruptNormalyClosed ^ digitalRead(3)))
-			&& ((_isExternalInterruptOn & 0x01U) != 0U))
-		)) {
-
-		blinkLedHideMode();
-
-		detachInterrupt(0);
-		detachInterrupt(1);
-
-		_what_is_happened[0] = 'M';
-		DEBUG_SERIAL_PRINTLN(F("Motion detected"));
-
-		if (_findOutPhonesMode == 1) {
-			if (!_isDeviceDetected) {
-				if ((_isExternalInterruptOn & 0x01U) != 0U) { _isExternalInterruptOn |= 0x02U; }
-				callSim900();
-				_isMasterMode = false;
-			}
-		}
-		else {
-			if ((_isExternalInterruptOn & 0x01U) != 0U) { _isExternalInterruptOn |= 0x02U; }
-			callSim900();
-			_isMasterMode = false;
-		}
-
-		////Accendo bluetooth con ritardo annesso solo se è scattato allarme,troppo critico
-		////per perdere tempo se non scattato allarme.
-		//if (!bluetooth_repository.isBluetoothOn() && _findOutPhonesMode == 0)
-		//{
-		//	delay(30000);
-		//	turnOnBlueToothAndSetTurnOffTimer(false);
-		//}
-		////}
-
-		//readIncomingSMS();
-
-		/*	readIncomingSMS();
-
-			findOutPhonesONAndSetBluetoothInMasterModeActivity();*/
-
-
-		EIFR |= 1 << INTF1; //clear external interrupt 1
-
-		EIFR |= 1 << INTF0; //clear external interrupt 0
-		//EIFR = 0x01;
-		sei();
-
-		attachInterrupt(0, motionTiltInternalInterrupt, RISING);
-		attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
-
-		_isOnMotionDetect = false;
-		_isOnExternalMotionDetect = false;
-	}
+	blinkLedHideMode();
+	detachInterrupt(0);
+	_what_is_happened[0] = 'M';
+	DEBUG_SERIAL_PRINTLN(F("Internal motion detected"));
+	callSim900();
+	_isMasterMode = false;
+	EIFR |= (1 << INTF0);
+	_isOnMotionDetect = false;
+	attachInterrupt(0, motionTiltInternalInterrupt, RISING);
 }
+//void motionDetectActivity() {
+//	if (_isDisableCall || _findOutPhonesMode == 2 || _findOutPhonesMode == 1 || _isPIRSensorActivated) {
+//		_isOnMotionDetect = false;
+//		return;
+//	}
+//	if ((_isExternalInterruptOn & 0x01U) != 0U && !(_isExtenalInterruptNormalyClosed ^ digitalRead(3))) {
+//		if ((_isExternalInterruptOn & 0x02U) != 0U) {
+//			_isExternalInterruptOn &= static_cast<uint8_t>(~0x02U);
+//			sim_repository.hangUp();
+//		}
+//		_isOnExternalMotionDetect = false;
+//	}
+//	if ((_isExternalInterruptOn & 0x01U) != 0U && (_isExtenalInterruptNormalyClosed ^ digitalRead(3)) && sim_repository.isCallActive()) {
+//		delay(250UL);
+//		return;
+//	}
+//
+//	//if ((millis() - _millsStart) > _sensitivityAlarm)
+//	//{
+//	//	_millsStart = 0;
+//	//	_isFirstTilt = true;
+//	//}
+//
+//	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && _isExternalInterruptOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))))
+//	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))) || _isExternalInterruptOn))	/*if(true)*/
+//
+//	if (_isAlarmOn && (
+//		(_isOnMotionDetect && ((_isExternalInterruptOn & 0x01U) == 0U))
+//		|| ((_isOnExternalMotionDetect || (_isExtenalInterruptNormalyClosed ^ digitalRead(3)))
+//			&& ((_isExternalInterruptOn & 0x01U) != 0U))
+//		)) {
+//
+//		blinkLedHideMode();
+//
+//		detachInterrupt(0);
+//		detachInterrupt(1);
+//
+//		_what_is_happened[0] = 'M';
+//		DEBUG_SERIAL_PRINTLN(F("Motion detected"));
+//
+//		if (_findOutPhonesMode == 1) {
+//			if (!_isDeviceDetected) {
+//				if ((_isExternalInterruptOn & 0x01U) != 0U) { _isExternalInterruptOn |= 0x02U; }
+//				callSim900();
+//				_isMasterMode = false;
+//			}
+//		}
+//		else {
+//			if ((_isExternalInterruptOn & 0x01U) != 0U) { _isExternalInterruptOn |= 0x02U; }
+//			callSim900();
+//			_isMasterMode = false;
+//		}
+//
+//		////Accendo bluetooth con ritardo annesso solo se è scattato allarme,troppo critico
+//		////per perdere tempo se non scattato allarme.
+//		//if (!bluetooth_repository.isBluetoothOn() && _findOutPhonesMode == 0)
+//		//{
+//		//	delay(30000);
+//		//	turnOnBlueToothAndSetTurnOffTimer(false);
+//		//}
+//		////}
+//
+//		//readIncomingSMS();
+//
+//		/*	readIncomingSMS();
+//
+//			findOutPhonesONAndSetBluetoothInMasterModeActivity();*/
+//
+//
+//		EIFR |= 1 << INTF1; //clear external interrupt 1
+//
+//		EIFR |= 1 << INTF0; //clear external interrupt 0
+//		//EIFR = 0x01;
+//		sei();
+//
+//		attachInterrupt(0, motionTiltInternalInterrupt, RISING);
+//		attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
+//
+//		_isOnMotionDetect = false;
+//		_isOnExternalMotionDetect = false;
+//	}
+//}
 //void restartBlueTooth()
 //{
 //	Serial.readString();

@@ -249,16 +249,17 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 
 	if (_isMasterMode == false) {
 		bluetooth_repository.find_mode_v3();
+		bluetooth_repository.set_to_master_mode();
 		_isMasterMode = true;
 	}
-
 	_isDeviceDetected = false;
 	for (uint8_t i = 0; i < _delayFindMe; i++) {
 		if (_phoneNumbers == 1) {
 			_isDeviceDetected = bluetooth_repository.is_device_detected(_bufDeviceAddress, _bufDeviceName);
 			if (_isDeviceDetected) {
+				Serial.println("Find first BT");
 				break;
-				//Serial.println("Find first BT");
+				
 			}
 		}
 
@@ -290,6 +291,8 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 }
 
 void loop() {
+	findOutPhonesONAndSetBluetoothInMasterModeActivity();
+	return;
 	readIncomingSMS();
 	if ((millis() > _timeToTurnOnAlarm) && _isAlarmOn != true) {
 		_isAlarmOn = true;

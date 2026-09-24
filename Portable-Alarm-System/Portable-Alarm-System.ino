@@ -248,12 +248,7 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 		}*/
 
 	if (_isMasterMode == false) {
-		if (_findOutPhonesMode == 1) {
-			bluetooth_repository.set_to_master_mode();
-		}
-		else {
-			bluetooth_repository.find_mode_v3();
-		}
+		bluetooth_repository.find_mode_v3();
 		_isMasterMode = true;
 	}
 
@@ -296,7 +291,6 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 
 void loop() {
 	readIncomingSMS();
-
 	if ((millis() > _timeToTurnOnAlarm) && _isAlarmOn != true) {
 		_isAlarmOn = true;
 	}

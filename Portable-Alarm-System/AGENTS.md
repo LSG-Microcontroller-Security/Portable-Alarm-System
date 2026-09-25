@@ -147,3 +147,10 @@ Preferred pattern:
 3. Preserve Flash and SRAM efficiency.
 4. Keep code mock-test compatible.
 5. Only then perform further architectural cleanup.
+
+## Naming conventions
+- Use `snake_case` for new variables, object instances, functions, and methods.
+- Boolean names should clearly describe a logical state, for example `is_external_contact_on_alarm`.
+- Use capitalized words separated by underscores for class and type names, for example `Bluetooth_Repository` and `External_Alarm_Manager`.
+- Use `UPPER_SNAKE_CASE` for macros and `#define` constants.
+- Existing identifiers do not need to be renamed immediately. Apply these rules to new code and to identifiers explicitly refactored later.

@@ -20,7 +20,7 @@ extern bool _isOnMotionDetect;
 extern bool _isDisableCall;
 extern uint8_t _isBTSleepON;
 extern uint8_t _isPIRSensorActivated;
-extern uint8_t _isExternalInterruptOn;
+extern uint8_t _is_external_Interrupt_activated;
 extern uint8_t _isBuzzerOn;
 extern uint8_t _phoneNumbers;
 extern uint8_t _findOutPhonesMode;
@@ -148,7 +148,7 @@ void BluetoothDynamicMenu::loadConfigurationMenu() {
         bluetooth_frame_writer.send_uint_frame(BT_TEXT("FindLoop:"), _delayFindMe, BluetoothCommandUtil::Data, 94U);
     }
     bluetooth_frame_writer.send_uint_frame(BT_TEXT("FindMode:"), _findOutPhonesMode, BluetoothCommandUtil::Data, 12U);
-    bluetooth_frame_writer.send_uint_frame(BT_TEXT("Ext.Int:"), _isExternalInterruptOn, BluetoothCommandUtil::Data, 13U);
+    bluetooth_frame_writer.send_uint_frame(BT_TEXT("Ext.Int:"), _is_external_Interrupt_activated, BluetoothCommandUtil::Data, 13U);
     bluetooth_frame_writer.send_uint_frame(BT_TEXT("Buzz.:"), _isBuzzerOn, BluetoothCommandUtil::Data, 14U);
     bluetooth_frame_writer.send_end();
 }
@@ -277,7 +277,7 @@ void BluetoothDynamicMenu::process() {
     else if (contains(bluetooth_data, BT_TEXT("D013"))) {
         if (read_value(bluetooth_data, value, sizeof(value)) && is_numeric(value) && copy_value(_bufExternalInterruptIsON, 2U, value)) {
             write_eeprom(AddressExternalInterruptIsOn, _bufExternalInterruptIsON);
-            _isExternalInterruptOn = atoi(_bufExternalInterruptIsON);
+            _is_external_Interrupt_activated = atoi(_bufExternalInterruptIsON);
         }
         loadConfigurationMenu();
     }

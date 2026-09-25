@@ -556,7 +556,6 @@ void listOfSmsCommands(const char* command) {
 	// Dc: disabilita le chiamate di allarme e chiude quella eventualmente in corso.
 	if (command[0] == 'D' && command[1] == 'c') {
 		_isDisableCall = true;
-		_is_external_Interrupt_activated &= static_cast<uint8_t>(~0x02U);
 		sim_repository.hangUp();
 	}
 	// Ab: accende il Bluetooth e avvia il relativo timer di spegnimento.

@@ -65,8 +65,8 @@ const byte _addressBuzzerIsOn = 134;
 uint8_t _isPIRSensorActivated = 0;
 bool _isBlueLedDisable = true;
 bool _isDisableCall = false;
-bool _isOnMotionDetect = false;
-bool _is_external_interrupt_detected = false;
+volatile bool _is_internal_interrupt_detected = false;
+volatile bool _is_external_interrupt_detected = false;
 bool _isPositionEnable = false;
 char _prefix[4] = "+39";
 bool _isAlarmOn = false;
@@ -74,7 +74,7 @@ char _phoneNumber[11];
 char _phoneNumberAlternative[11];
 char _what_is_happened[2] = {};
 uint8_t _isBTSleepON = 1;
-bool _is_external_Interrupt_activated = false;
+bool _is_external_interrupt_activated = false;
 uint8_t _isBuzzerOn = 0;
 uint8_t _phoneNumbers = 0;
 uint8_t _findOutPhonesMode = 0;
@@ -147,17 +147,17 @@ void loop() {
 	if (_isAlarmOn && (_findOutPhonesMode == 1 || _findOutPhonesMode == 2)) {
 		findOutPhonesONAndSetBluetoothInMasterModeActivity();
 	}
-	if (!(_isOnMotionDetect && _isAlarmOn)) {
+	if (!(_is_internal_interrupt_detected && _isAlarmOn)) {
 		turnOffBluetoohIfTimeIsOver();
 	}
 	/*if (!(_isOnMotionDetect && _isAlarmOn))
 	{
 		turnOnBlueToothIfMotionIsDetected();
 	}*/
-	if (!(_isOnMotionDetect)) {
+	if (!(_is_internal_interrupt_detected)) {
 		internalTemperatureActivity();
 	}
-	if (!(_isOnMotionDetect)) {
+	if (!(_is_internal_interrupt_detected)) {
 		voltageActivity();
 	}
 	pirSensorActivity();
@@ -188,7 +188,7 @@ void initilizeEEPromData() {
 	eeprom_rw.eeprom_read_string(_addressDelayFindMe, _bufDelayFindMe, BUFSIZEDELAYFINDME);
 	_delayFindMe = atoi(_bufDelayFindMe);
 	eeprom_rw.eeprom_read_string(_addressExternalInterruptIsOn, _bufExternalInterruptIsON, BUFSIZEEXTERNALINTERRUPTISON);
-	_is_external_Interrupt_activated = atoi(&_bufExternalInterruptIsON[0]);
+	_is_external_interrupt_activated = atoi(&_bufExternalInterruptIsON[0]);
 	eeprom_rw.eeprom_read_string(_addressBuzzerIsOn, _bufBuzzerIsON, BUFSIZEBUZZERISON);
 	_isBuzzerOn = atoi(&_bufBuzzerIsON[0]);
 }
@@ -214,13 +214,13 @@ void callSim900() {
 	sim_repository.call(phoneNumber);
 }
 void motionTiltExternalInterrupt() {
-	if (_is_external_Interrupt_activated) {
+	if (_is_external_interrupt_activated) {
 		_is_external_interrupt_detected = true;
 	}
 }
 void motionTiltInternalInterrupt() {
 	if (!_isPIRSensorActivated) {
-		_isOnMotionDetect = true;
+		_is_internal_interrupt_detected = true;
 	}
 }
 void turnOffBluetoohIfTimeIsOver() {
@@ -277,10 +277,10 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 }
 void internalMotionDetectActivity() {
 	if (_isDisableCall || _findOutPhonesMode == 2 || _findOutPhonesMode == 1 || _isPIRSensorActivated) {
-		_isOnMotionDetect = false;
+		_is_internal_interrupt_detected = false;
 		return;
 	}
-	if (!_isAlarmOn || !_isOnMotionDetect) {
+	if (!_isAlarmOn || !_is_internal_interrupt_detected) {
 		return;
 	}
 	blinkLedHideMode();
@@ -290,11 +290,11 @@ void internalMotionDetectActivity() {
 	callSim900();
 	_isMasterMode = false;
 	EIFR |= (1 << INTF0);
-	_isOnMotionDetect = false;
+	_is_internal_interrupt_detected = false;
 	attachInterrupt(0, motionTiltInternalInterrupt, RISING);
 }
 void externalMotionDetectActivity() {
-	if (!_is_external_Interrupt_activated || _isDisableCall || !_isAlarmOn) {
+	if (!_is_external_interrupt_activated || _isDisableCall || !_isAlarmOn) {
 		_is_external_interrupt_detected = false;
 		return;
 	}
@@ -528,8 +528,8 @@ void deactivateOtherAlarmModes() {
 	_isPIRSensorActivated = 0;
 	_findOutPhonesMode = 0;
 	_isBuzzerOn = 0;
-	_is_external_Interrupt_activated = 0;
-	_isOnMotionDetect = false;
+	_is_external_interrupt_activated = 0;
+	_is_internal_interrupt_detected = false;
 	_is_external_interrupt_detected = false;
 }
 void listOfSmsCommands(const char* command) {
@@ -584,20 +584,20 @@ void listOfSmsCommands(const char* command) {
 	if (command[0] == 'E' && command[1] == 'o') {
 		deactivateOtherAlarmModes();
 		_isBTSleepON = true;
-		_is_external_Interrupt_activated = true;
+		_is_external_interrupt_activated = true;
 		activateFunctionAlarm();
 		bluetooth_repository.turnOffBlueTooth();
 		_isExtenalInterruptNormalyClosed = false;
 	}
 	// Ex: disabilita l'allarme del contatto esterno.
 	if (command[0] == 'E' && command[1] == 'x') {
-		_is_external_Interrupt_activated = false;
+		_is_external_interrupt_activated = false;
 	}
 	// Ec: attiva l'allarme con contatto esterno normalmente chiuso.
 	if (command[0] == 'E' && command[1] == 'c') {
 		deactivateOtherAlarmModes();
 		_isBTSleepON = true;
-		_is_external_Interrupt_activated = true;
+		_is_external_interrupt_activated = true;
 		_timeToTurnOnAlarm = 0;
 		_isDisableCall = false;
 		_isAlarmOn = true;

@@ -90,7 +90,7 @@ unsigned long _timeToTurnOnAlarm = millis() + 300000;
 //String _apn = "";
 bool _isDeviceDetected = false;
 bool _isFindBTModeActive = false;
-char* _BTVersion = "V3";
+const char* _BTVersion = "V3";
 const int BUFSIZEPHONENUMBER = 11;
 const int BUFSIZEPHONENUMBERALTERANATIVE = 11;
 const int BUFSIZEPIRSENSORISON = 2;
@@ -245,7 +245,7 @@ void turnOffBluetoohIfTimeIsOver() {
 void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	if (_isDisableCall) { return; }
 	if (!_isFindBTModeActive) {
-		if (_BTVersion == "V3") {
+		if (strcmp(_BTVersion, "V3") == 0) {
 			bluetooth_repository.set_to_slave_mode();
 			bluetooth_repository.find_mode_v3();
 		}

@@ -41,7 +41,6 @@ const uint8_t _pin_pir = A5;
 const uint8_t _pin_buzzer = 5;
 const byte _pin_rxSIM900 = 7;
 const byte _pin_txSIM900 = 8;
-const byte _pin_reedRelay = A4;
 SoftwareSerial sim_serial(_pin_rxSIM900, _pin_txSIM900, false);
 SoftwareSerialAdapter sim_serial_adapter(sim_serial);
 SimRepository sim_repository(sim_serial_adapter);
@@ -51,18 +50,13 @@ AvrMicroRepository bluetooth_avr_repository(bluetooth_serial_adapter, mf::common
 BlueToothRepository bluetooth_repository(bluetooth_avr_repository, 10, 6, 38400, 9600);
 BluetoothFrameWriter bluetooth_frame_writer(bluetooth_repository);
 const byte _addressStartBufPhoneNumber = 1;
-const byte _addressStartBufPrecisionNumber = 12;
-const byte _addressStartBufTemperatureIsOn = 14;
 const byte _addressStartBufTemperatureMax = 16;
 const byte _addressStartBufPirSensorIsON = 19;
 const byte _addressStartDeviceAddress = 21;
 const byte _addressStartDeviceName = 36;
 const byte _addressStartFindOutPhonesON = 51;
-const byte _addressStartBTSleepIsON = 53;
 const byte _addressDBPhoneIsON = 55;
 const byte _addressStartBufPhoneNumberAlternative = 57;
-const byte _addressStartFindMode = 68;
-const byte _addressApn = 70;
 const byte _addressOffSetTemperature = 95;
 const byte _addressDelayFindMe = 100;
 const byte _addressExternalInterruptIsOn = 102;
@@ -75,7 +69,6 @@ bool _isDisableCall = false;
 bool _isOnMotionDetect = false;
 bool _is_external_interrupt_detected = false;
 bool _isPositionEnable = false;
-unsigned long _sensitivityAlarm;
 char _prefix[4] = "+39";
 bool _isAlarmOn = false;
 char _phoneNumber[11];
@@ -114,8 +107,6 @@ char _bufDeviceAddress2[BUFSIZEDEVICEADDRESS];
 const int BUFSIZEDEVICENAME = 15;
 char _bufDeviceName[BUFSIZEDEVICENAME];
 char _bufDeviceName2[BUFSIZEDEVICENAME];
-const int BUFSIZEAPN = 25;
-char _bufApn[BUFSIZEAPN];
 const int BUFSIZEOFFSETTEMPERATURE = 5;
 char _bufOffSetTemperature[BUFSIZEOFFSETTEMPERATURE];
 const int BUFSIZEDELAYFINDME = 2;
@@ -172,7 +163,6 @@ void loop() {
 	}
 	pirSensorActivity();
 	internalMotionDetectActivity();
-
 	if (!_isAlarmOn) {
 		BluetoothDynamicMenu::process();
 	}

@@ -21,7 +21,6 @@
 #include "BluetoothFrameWriter.h"
 #include "BluetoothDynamicMenu.h"
 #include "mf_repository_SimRepository.h"
-
 #if _DEBUG_FOR_SERIAL
 #define DEBUG_SERIAL_PRINT(...) do { Serial.print(__VA_ARGS__); } while (0)
 #define DEBUG_SERIAL_PRINTLN(...) do { Serial.println(__VA_ARGS__); } while (0)
@@ -80,7 +79,7 @@ uint8_t _isBuzzerOn = 0;
 uint8_t _phoneNumbers = 0;
 uint8_t _findOutPhonesMode = 0;
 uint8_t _tempMax = 0;
-uint8_t _delayFindMe = 2;
+uint8_t _delayFindMe = 1;
 unsigned int _offSetTempValue = 324;
 float _voltageValue = 0;
 float _voltageMinValue = 0;

@@ -163,6 +163,7 @@ void loop() {
 	}
 	pirSensorActivity();
 	internalMotionDetectActivity();
+	externalMotionDetectActivity();
 	if (!_isAlarmOn) {
 		BluetoothDynamicMenu::process();
 	}
@@ -255,10 +256,15 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	}
 	_isDeviceDetected = false;
 	for (uint8_t i = 0; i < _delayFindMe; i++) {
-		if (_phoneNumbers == 1) {
+		if (_phoneNumbers == 1 && _bufDeviceAddress[0] != '\0' && _bufDeviceName[0] != '\0') {
 			_isDeviceDetected = bluetooth_repository.is_device_detected(_bufDeviceAddress, _bufDeviceName);
 			if (_isDeviceDetected) {
-				//Serial.println("Find first BT");
+				break;
+			}
+		}
+		if (_phoneNumbers == 2 && _bufDeviceAddress2[0] != '\0' && _bufDeviceName2[0] != '\0') {
+			_isDeviceDetected = bluetooth_repository.is_device_detected(_bufDeviceAddress2, _bufDeviceName2);
+			if (_isDeviceDetected) {
 				break;
 			}
 		}

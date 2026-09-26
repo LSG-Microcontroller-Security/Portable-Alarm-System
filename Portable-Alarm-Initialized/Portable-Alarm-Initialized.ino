@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 #include <MyBlueTooth.h>
 #ifndef EEPROM_INITIALIZATION_ENABLED
-#define EEPROM_INITIALIZATION_ENABLED 1U
+#define EEPROM_INITIALIZATION_ENABLED 0U
 #endif
 const uint8_t configuration_version_address = 0U;
 const uint8_t configuration_version = 1U;
@@ -33,8 +33,6 @@ const unsigned long serial_monitor_baud_rate = 38400UL;
 const size_t bluetooth_response_buffer_size = 64U;
 const unsigned long bluetooth_response_timeout_ms = 1500UL;
 const unsigned long bluetooth_response_end_delay_ms = 100UL;
-
-
 #if EEPROM_INITIALIZATION_ENABLED
 void clear_eeprom() {
 	const int eeprom_length = EEPROM.length();
@@ -141,37 +139,6 @@ bool read_bluetooth_response(char* response, size_t response_size) {
 	trim_bluetooth_response(response);
 	return response[0] != '\0';
 }
-void log_bluetooth_characteristic(MyBlueTooth& bluetooth, const __FlashStringHelper* label, const __FlashStringHelper* command) {
-	char response[bluetooth_response_buffer_size];
-
-	// Il log usa Serial soltanto mentre il Bluetooth e spento.
-	bluetooth.turnOffBlueTooth();
-	Serial.begin(serial_monitor_baud_rate);
-	Serial.print(F("INTERROGAZIONE BLUETOOTH - "));
-	Serial.println(label);
-	Serial.flush();
-
-	// ProgramMode pilota il transistor sul pin 6 e porta Serial a 38400 baud.
-	bluetooth.ProgramMode();
-	bluetooth.turnOnBlueTooth();
-	clear_bluetooth_serial_input();
-	Serial.println(command);
-	const bool has_response = read_bluetooth_response(response, sizeof(response));
-
-	// La risposta viene stampata soltanto dopo avere spento il modulo.
-	bluetooth.turnOffBlueTooth();
-	Serial.begin(serial_monitor_baud_rate);
-	delay(100);
-
-	Serial.print(label);
-	Serial.print(F(": "));
-	if (!has_response) {
-		Serial.println(F("nessuna risposta"));
-		return;
-	}
-
-	Serial.println(response);
-}
 void log_bluetooth_connection(MyBlueTooth& bluetooth) {
 	log_bluetooth_characteristic(bluetooth, F("Connessione"), F("AT"));
 }
@@ -193,11 +160,29 @@ void log_bluetooth_role(MyBlueTooth& bluetooth) {
 void log_bluetooth_uart(MyBlueTooth& bluetooth) {
 	log_bluetooth_characteristic(bluetooth, F("UART"), F("AT+UART?"));
 }
+void log_bluetooth_characteristic(MyBlueTooth& bluetooth, const __FlashStringHelper* label, const __FlashStringHelper* command) {
+	char response[bluetooth_response_buffer_size];
+	Serial.print(F("INTERROGAZIONE BLUETOOTH - "));
+	Serial.println(label);
+	Serial.flush();
+	bluetooth.clearBuffer();
+	bluetooth.ProgramMode();
+	clear_bluetooth_serial_input();
+	Serial.println(command);
+	const bool has_response = read_bluetooth_response(response, sizeof(response));
+	// La risposta viene stampata soltanto dopo avere spento il modulo.
+	delay(100);
+	Serial.print(label);
+	Serial.print(F(": "));
+	if (!has_response) {
+		Serial.println(F("nessuna risposta"));
+		return;
+	}
+	Serial.println(response);
+}
 void log_bluetooth_characteristics(MyBlueTooth& bluetooth) {
-	bluetooth.turnOffBlueTooth();
 	Serial.begin(serial_monitor_baud_rate);
-	Serial.println(F("--- Diagnostica Bluetooth ---"));
-
+	Serial.println(F("--- ATTENZIONE!!!USARE 5Volts pieni Diagnostica Bluetooth ---"));
 	log_bluetooth_connection(bluetooth);
 	log_bluetooth_version(bluetooth);
 	log_bluetooth_name(bluetooth);
@@ -205,15 +190,12 @@ void log_bluetooth_characteristics(MyBlueTooth& bluetooth) {
 	log_bluetooth_password(bluetooth);
 	log_bluetooth_role(bluetooth);
 	log_bluetooth_uart(bluetooth);
-
 	Serial.println(F("--- Fine diagnostica Bluetooth ---"));
 }
 void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, LOW);
 	static MyBlueTooth bluetooth(&Serial, bluetooth_key_pin, bluetooth_power_pin, bluetooth_program_baud_rate, bluetooth_receive_baud_rate);
-	bluetooth.turnOffBlueTooth();
-	Serial.begin(serial_monitor_baud_rate);
 
 #if EEPROM_INITIALIZATION_ENABLED
 	Serial.println(F("ATTENZIONE: SCRITTURA EEPROM ABILITATA"));
@@ -224,9 +206,7 @@ void setup() {
 #else
 	Serial.println(F("SCRITTURA EEPROM DISABILITATA"));
 #endif
-
 	log_bluetooth_characteristics(bluetooth);
-
 	digitalWrite(LED_BUILTIN, HIGH);
 }
 void loop() {

@@ -23,7 +23,7 @@ extern uint8_t _isPIRSensorActivated;
 extern uint8_t _is_external_interrupt_activated;
 extern uint8_t _isBuzzerOn;
 extern uint8_t _phoneNumbers;
-extern uint8_t _findOutPhonesMode;
+extern volatile uint8_t _findOutPhonesMode;
 extern uint8_t _tempMax;
 extern uint8_t _delayFindMe;
 extern unsigned int _offSetTempValue;

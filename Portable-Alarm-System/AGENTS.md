@@ -1,6 +1,8 @@
 # Portable Alarm System - Development Rules
 
 ## General
+- Quando emerge la necessità di creare nuove funzioni o metodi, nuove classi o strutture aggiuntive rispetto a quelle esistenti, anche in file già presenti, avvisare Luigi, spiegare cosa si intende aggiungere e perché, chiedere il suo via libera e attenderlo prima di agire. Le normali modifiche al codice già esistente restano nell'ambito della richiesta autorizzata. Il vincolo vale anche per i subagenti.
+- Se una nuova indicazione di Luigi, o l'interpretazione dell'agente, contraddice decisioni, comportamenti o indicazioni precedenti, segnalare esplicitamente il conflitto a Luigi e attendere il suo chiarimento prima di procedere con le modifiche collegate. Il vincolo vale anche per i subagenti.
 - Preserve existing behavior before architectural refactoring.
 - Minimize Flash and SRAM usage.
 - Avoid unnecessary abstractions, objects, buffers, or helper layers.

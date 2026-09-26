@@ -77,7 +77,7 @@ uint8_t _isBTSleepON = 1;
 bool _is_external_interrupt_activated = false;
 uint8_t _isBuzzerOn = 0;
 uint8_t _phoneNumbers = 0;
-uint8_t _findOutPhonesMode = 0;
+volatile uint8_t _findOutPhonesMode = 0;
 uint8_t _tempMax = 0;
 uint8_t _delayFindMe = 1;
 unsigned int _offSetTempValue = 324;
@@ -147,9 +147,17 @@ void loop() {
 	if (_isAlarmOn && (_findOutPhonesMode == 1 || _findOutPhonesMode == 2)) {
 		findOutPhonesONAndSetBluetoothInMasterModeActivity();
 	}
-	if (!(_is_internal_interrupt_detected && _isAlarmOn)) {
-		turnOffBluetoohIfTimeIsOver();
+	if (_findOutPhonesMode == 2) {
+		_is_internal_interrupt_detected = false;
+		_is_external_interrupt_detected = false;
+		if (!_isAlarmOn) { BluetoothDynamicMenu::process(); }
+		return;
 	}
+	if (_is_internal_interrupt_detected && _isAlarmOn) {
+		internalMotionDetectActivity();
+		return;
+	}
+	turnOffBluetoohIfTimeIsOver();
 	/*if (!(_isOnMotionDetect && _isAlarmOn))
 	{
 		turnOnBlueToothIfMotionIsDetected();
@@ -214,7 +222,7 @@ void callSim900() {
 	sim_repository.call(phoneNumber);
 }
 void motionTiltExternalInterrupt() {
-	if (_is_external_interrupt_activated) {
+	if (_findOutPhonesMode != 2 && _is_external_interrupt_activated) {
 		_is_external_interrupt_detected = true;
 	}
 }
@@ -268,19 +276,23 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 			}
 		}
 	}
-	if (_isDeviceDetected && _findOutPhonesMode == 1) {
+	if (_isDeviceDetected && _findOutPhonesMode == 2) {
 		blinkLedHideMode();
 	}
-	else if (!_isDeviceDetected && _findOutPhonesMode == 1) {
+	else if (!_isDeviceDetected && _findOutPhonesMode == 2) {
 		callSim900();
 	}
 }
 void internalMotionDetectActivity() {
-	if (_isDisableCall || _findOutPhonesMode == 2 || _findOutPhonesMode == 1 || _isPIRSensorActivated) {
+	if (_isDisableCall || _findOutPhonesMode == 2 || _isPIRSensorActivated) {
 		_is_internal_interrupt_detected = false;
 		return;
 	}
 	if (!_isAlarmOn || !_is_internal_interrupt_detected) {
+		return;
+	}
+	if (_isDeviceDetected && _findOutPhonesMode == 1) {
+		_is_internal_interrupt_detected = false;
 		return;
 	}
 	blinkLedHideMode();
@@ -294,7 +306,7 @@ void internalMotionDetectActivity() {
 	attachInterrupt(0, motionTiltInternalInterrupt, RISING);
 }
 void externalMotionDetectActivity() {
-	if (!_is_external_interrupt_activated || _isDisableCall || !_isAlarmOn) {
+	if (_findOutPhonesMode == 2 || !_is_external_interrupt_activated || _isDisableCall || !_isAlarmOn) {
 		_is_external_interrupt_detected = false;
 		return;
 	}

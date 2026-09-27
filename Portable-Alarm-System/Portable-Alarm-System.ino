@@ -89,7 +89,7 @@ unsigned long _timeToTurnOnAlarm = millis() + 300000;
 //String _apn = "";
 bool _isDeviceDetected = false;
 bool _isFindBTModeActive = false;
-const char* _BTVersion = "V4";
+const char* _BTVersion = "V3";
 const int BUFSIZEPHONENUMBER = 11;
 const int BUFSIZEPHONENUMBERALTERANATIVE = 11;
 const int BUFSIZEPIRSENSORISON = 2;
@@ -284,7 +284,7 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	}
 }
 void internalMotionDetectActivity() {
-	if (_isDisableCall || _findOutPhonesMode == 2 || _isPIRSensorActivated) {
+	if (_isDisableCall || _findOutPhonesMode == 2 || _isPIRSensorActivated || _is_external_interrupt_activated) {
 		_is_internal_interrupt_detected = false;
 		return;
 	}
@@ -315,13 +315,6 @@ void externalMotionDetectActivity() {
 	if (!_is_external_interrupt_detected && !is_external_contact_on_alarm) {
 		return;
 	}
-	// L'evento interrupt è stato acquisito.
-	_is_external_interrupt_detected = false;
-	// CHANGE scatta anche quando il contatto torna normale.
-	// La chiamata parte solo se il pin conferma lo stato di allarme.
-	if (!is_external_contact_on_alarm) {
-		return;
-	}
 	// Se una chiamata è già attiva, aspettiamo che termini.
 	// Se il contatto rimane in allarme, al giro successivo
 	// is_external_contact_on_alarm sarà ancora true.
@@ -330,11 +323,12 @@ void externalMotionDetectActivity() {
 	}
 	blinkLedHideMode();
 	detachInterrupt(1);
-	_what_is_happened[0] = 'M';
+	_what_is_happened[0] = 'E';
 	DEBUG_SERIAL_PRINTLN(F("Ext.Interr"));
 	callSim900();
 	_isMasterMode = false;
 	EIFR |= (1 << INTF1);
+	_is_external_interrupt_detected = false;
 	attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
 }
 //void motionDetectActivity() {
@@ -540,7 +534,8 @@ void deactivateOtherAlarmModes() {
 	_isPIRSensorActivated = 0;
 	_findOutPhonesMode = 0;
 	_isBuzzerOn = 0;
-	_is_external_interrupt_activated = 0;
+	_is_external_interrupt_activated = false;
+	_is_internal_interrupt_detected = false;
 	_is_internal_interrupt_detected = false;
 	_is_external_interrupt_detected = false;
 }

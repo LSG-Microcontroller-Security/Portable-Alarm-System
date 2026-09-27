@@ -1,4 +1,6 @@
-@echo off
+from pathlib import Path
+
+content = r"""@echo off
 setlocal EnableExtensions
 
 set "REPO=%~dp0.."
@@ -22,7 +24,7 @@ if /I not "%BRANCH%"=="release" (
 	exit /b 1
 )
 
-git -C "%REPO%" status --porcelain > "%GITTMP%"
+git -C "%REPO%" status --porcelain -- . ":(exclude)Portable-Alarm-System/BasicPortableAlarmSystem.vcxproj" > "%GITTMP%"
 for %%A in ("%GITTMP%") do set SIZE=%%~zA
 
 if not "%SIZE%"=="0" (
@@ -64,3 +66,8 @@ del "%GITTMP%" >nul 2>&1
 
 echo Git version: %GIT_HASH%
 exit /b 0
+"""
+
+path = Path("/mnt/data/GenerateGitVersion.bat")
+path.write_text(content, encoding="utf-8", newline="\r\n")
+print(path)

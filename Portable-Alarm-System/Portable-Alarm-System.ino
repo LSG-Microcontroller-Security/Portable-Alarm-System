@@ -117,6 +117,7 @@ char _bufBuzzerIsON[BUFSIZEBUZZERISON];
 void setup() {
 	sim_repository.begin(19200);
 	inizializePins();
+	blinkLed(50,3);
 	inizializeInterrupts();
 	bluetooth_repository.set_to_slave_mode();
 	//my_sim900.getCCLK();

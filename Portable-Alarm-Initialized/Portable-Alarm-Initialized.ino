@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 #include <MyBlueTooth.h>
 #ifndef EEPROM_INITIALIZATION_ENABLED
-#define EEPROM_INITIALIZATION_ENABLED 1U
+#define EEPROM_INITIALIZATION_ENABLED 0U
 #endif
 const uint8_t configuration_version_address = 0U;
 const uint8_t configuration_version = 1U;

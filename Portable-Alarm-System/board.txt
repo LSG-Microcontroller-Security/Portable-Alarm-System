@@ -1,1 +1,1 @@
-recipe.hooks.sketch.prebuild.9.pattern=cmd.exe /c call "{build.project_path}\GenerateGitVersion.bat"
+recipe.hooks.sketch.prebuild.9.pattern=cmd.exe /c {build.project_path}\GenerateGitVersion.bat

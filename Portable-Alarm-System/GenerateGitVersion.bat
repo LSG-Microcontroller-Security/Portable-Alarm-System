@@ -1,72 +1,66 @@
 @echo off
-setlocal EnableExtensions EnableDelayedExpansion
+setlocal EnableExtensions
 
 set "REPO=%~dp0.."
 set "OUT=%~dp0GitVersion.h"
 set "TMP=%~dp0GitVersion.tmp"
+set "GITTMP=%TEMP%\PortableAlarmGitVersion.txt"
 
-rem Verify Git repository
 git -C "%REPO%" rev-parse --is-inside-work-tree >nul 2>&1
 if errorlevel 1 (
 	echo ERROR: Git repository not found.
 	exit /b 1
 )
 
-rem Verify current branch
-for /f "delims=" %%B in ('git -C "%REPO%" rev-parse --abbrev-ref HEAD') do set "BRANCH=%%B"
+git -C "%REPO%" rev-parse --abbrev-ref HEAD > "%GITTMP%"
+set /p BRANCH=<"%GITTMP%"
 
-if /I not "!BRANCH!"=="release" (
+if /I not "%BRANCH%"=="release" (
 	echo ERROR: Firmware release can only be built from branch release.
-	echo Current branch: !BRANCH!
+	echo Current branch: %BRANCH%
+	del "%GITTMP%" >nul 2>&1
 	exit /b 1
 )
 
-rem Verify working tree is clean
-set "DIRTY="
-for /f "delims=" %%S in ('git -C "%REPO%" status --porcelain') do set "DIRTY=1"
+git -C "%REPO%" status --porcelain > "%GITTMP%"
+for %%A in ("%GITTMP%") do set SIZE=%%~zA
 
-if defined DIRTY (
+if not "%SIZE%"=="0" (
 	echo ERROR: Working tree is not clean.
 	echo Commit or discard changes before building the release.
+	del "%GITTMP%" >nul 2>&1
 	exit /b 1
 )
 
-rem Update origin/release
 git -C "%REPO%" fetch origin release --quiet
 if errorlevel 1 (
 	echo ERROR: Cannot fetch origin/release.
+	del "%GITTMP%" >nul 2>&1
 	exit /b 1
 )
 
-rem Compare local HEAD with origin/release
-for /f "delims=" %%H in ('git -C "%REPO%" rev-parse HEAD') do set "LOCAL_HASH=%%H"
-for /f "delims=" %%H in ('git -C "%REPO%" rev-parse FETCH_HEAD') do set "REMOTE_HASH=%%H"
+git -C "%REPO%" rev-parse HEAD > "%GITTMP%"
+set /p LOCAL_HASH=<"%GITTMP%"
 
-if /I not "!LOCAL_HASH!"=="!REMOTE_HASH!" (
+git -C "%REPO%" rev-parse FETCH_HEAD > "%GITTMP%"
+set /p REMOTE_HASH=<"%GITTMP%"
+
+if /I not "%LOCAL_HASH%"=="%REMOTE_HASH%" (
 	echo ERROR: Local release is not aligned with origin/release.
-	echo Local : !LOCAL_HASH!
-	echo Origin: !REMOTE_HASH!
+	echo Local : %LOCAL_HASH%
+	echo Origin: %REMOTE_HASH%
+	del "%GITTMP%" >nul 2>&1
 	exit /b 1
 )
 
-rem Get short Git hash
-for /f "delims=" %%H in ('git -C "%REPO%" rev-parse --short=8 HEAD') do set "GIT_HASH=%%H"
+git -C "%REPO%" rev-parse --short=8 HEAD > "%GITTMP%"
+set /p GIT_HASH=<"%GITTMP%"
 
-rem Generate header
 > "%TMP%" echo #pragma once
->> "%TMP%" echo #define GIT_VERSION "!GIT_HASH!"
-
-rem Replace header only when content changed
-if exist "%OUT%" (
-	fc /b "%TMP%" "%OUT%" >nul 2>&1
-	if not errorlevel 1 (
-		del "%TMP%"
-		echo Git version: !GIT_HASH!
-		exit /b 0
-	)
-)
+>> "%TMP%" echo #define GIT_VERSION "%GIT_HASH%"
 
 move /y "%TMP%" "%OUT%" >nul
+del "%GITTMP%" >nul 2>&1
 
-echo Git version: !GIT_HASH!
+echo Git version: %GIT_HASH%
 exit /b 0

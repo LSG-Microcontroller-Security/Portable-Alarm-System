@@ -21,6 +21,7 @@
 #include "BluetoothFrameWriter.h"
 #include "BluetoothDynamicMenu.h"
 #include "mf_repository_SimRepository.h"
+#include "GitVersion.h"
 #if _DEBUG_FOR_SERIAL
 #define DEBUG_SERIAL_PRINT(...) do { Serial.print(__VA_ARGS__); } while (0)
 #define DEBUG_SERIAL_PRINTLN(...) do { Serial.println(__VA_ARGS__); } while (0)
@@ -28,7 +29,7 @@
 #define DEBUG_SERIAL_PRINT(...) do { } while (0)
 #define DEBUG_SERIAL_PRINTLN(...) do { } while (0)
 #endif
-char version[15] = "S001 7.86-RTM";
+char version[15] = GIT_VERSION;
 //Library version : 6.55-RTM
 ActivityManager _delay_for_temperature(60);
 ActivityManager _delay_for_voltage(60);

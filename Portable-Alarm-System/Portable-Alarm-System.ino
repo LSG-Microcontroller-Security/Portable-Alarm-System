@@ -89,7 +89,7 @@ unsigned long _timeToTurnOnAlarm = millis() + 300000;
 //String _apn = "";
 bool _isDeviceDetected = false;
 bool _isFindBTModeActive = false;
-const char* _BTVersion = "V3";
+const char* _BTVersion = "V2";
 const int BUFSIZEPHONENUMBER = 11;
 const int BUFSIZEPHONENUMBERALTERANATIVE = 11;
 const int BUFSIZEPIRSENSORISON = 2;
@@ -580,11 +580,12 @@ void listOfSmsCommands(const char* command) {
 		callSim900();
 	}
 	// Nv: attiva la modalità Non vedermi con ricerca Bluetooth del telefono.
-	if (command[0] == 'N' && command[1] == 'v') {
+	if (command[0] == 'N' && command[1] >= '1' && command[1] <= '9') {
 		deactivateOtherAlarmModes();
 		_findOutPhonesMode = 1;
 		_isBTSleepON = false;
 		_timeToTurnOnAlarm = 0;
+		_delayFindMe = command[1] - '0';
 		blinkLed(500, 3);
 	}
 	// Eo: attiva l'allarme con contatto esterno normalmente aperto.
@@ -631,11 +632,12 @@ void listOfSmsCommands(const char* command) {
 		activateFunctionAlarm();
 		bluetooth_repository.turnOffBlueTooth();
 	}
-	// Fm: attiva la modalità Trova il dispositivo.
-	if (command[0] == 'F' && command[1] == 'm') {
-		deactivateOtherAlarmModes();
+	// F1-F9: attiva la modalità il dispositivo è ancora rilevato 
+	if (command[0] == 'F' && command[1] >= '1' && command[1] <= '9') {
+		deactivateOtherAlarmModes(); 
 		_isBTSleepON = false;
 		_findOutPhonesMode = 2;
+		_delayFindMe = command[1] - '0';
 		activateFunctionAlarm();
 	}
 }

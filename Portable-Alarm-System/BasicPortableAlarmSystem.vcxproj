@@ -201,18 +201,21 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.github\workflows\firmware-ci.yml" />
     <None Include="..\Documents\Portable volantino.docx" />
     <None Include="..\Eagle\ChargeStepUpBoard.brd" />
     <None Include="..\Eagle\ChargeStepUpBoard2.brd" />
     <None Include="..\Eagle\PortableAlarmSystem.brd" />
     <None Include="..\Eagle\PortableAlarmSystem2.brd" />
     <None Include="AGENTS.md" />
+    <None Include="GenerateGitVersion.bat" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\MicroControllerTeamProject\libraries\MF_Commons\src\mf_commons_commonsLayer.h" />
     <ClInclude Include="BluetoothCommandUtil.h" />
     <ClInclude Include="BluetoothDynamicMenu.h" />
     <ClInclude Include="BluetoothFrameWriter.h" />
+    <ClInclude Include="GitVersion.h" />
     <ClInclude Include="mf_repository_SimRepository.h" />
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h" />
   </ItemGroup>
@@ -221,6 +224,9 @@
     <Image Include="..\SitoPortable\photo usate\IMG_20190405_110031.jpg" />
     <Image Include="..\SitoPortable\photo usate\portable1.png" />
     <Image Include="..\SitoPortable\photo usate\terza.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="board.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

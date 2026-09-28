@@ -42,6 +42,17 @@ jobs:
           arduino-cli core update-index
           arduino-cli core install arduino:avr
 
+      - name: Prepare firmware libraries
+        run: |
+          mkdir -p ci-libraries
+          cp -r external-libraries/MF_Commons ci-libraries/
+          cp -r external-libraries/MF_HardwareSerialAdapter ci-libraries/
+          cp -r external-libraries/MF_SoftwareSerialAdapter ci-libraries/
+          cp -r external-libraries/MF_AvrMicroRepository ci-libraries/
+          cp -r external-libraries/MF_BlueToothRepository ci-libraries/
+          cp -r external-libraries/LSGEEPromRW ci-libraries/
+          cp -r external-libraries/LSG_ActivityManager ci-libraries/
+
       - name: Create CI GitVersion.h
         run: |
           echo '#pragma once' > Portable-Alarm-System/GitVersion.h
@@ -51,5 +62,5 @@ jobs:
         run: |
           arduino-cli compile \
             --fqbn arduino:avr:nano \
-            --libraries "$GITHUB_WORKSPACE/external-libraries" \
+            --libraries "$GITHUB_WORKSPACE/ci-libraries" \
             "$GITHUB_WORKSPACE/Portable-Alarm-System"

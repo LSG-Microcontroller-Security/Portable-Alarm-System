@@ -6,6 +6,7 @@ set "BUILD_PATH=%~1"
 set "OUT=%BUILD_PATH%\GitVersion.h"
 set "TMP=%BUILD_PATH%\GitVersion.tmp"
 set "GITTMP=%TEMP%\PortableAlarmGitVersion.txt"
+set "FAIL_DEFINE=INVALID_GIT_BUILD"
 
 if "%BUILD_PATH%"=="" (
 	echo ERROR: Build path not provided.
@@ -21,11 +22,15 @@ if errorlevel 1 (
 git -C "%REPO%" rev-parse --abbrev-ref HEAD > "%GITTMP%"
 set /p BRANCH=<"%GITTMP%"
 
-if /I not "%BRANCH:~0,8%"=="release/" (
-	call :fail "Current branch is not a release branch."
-	echo Current branch: %BRANCH%
-	exit /b 1
-)
+echo Git branch: %BRANCH%
+
+rem ------------------------------------------------------------
+rem Strict validation only for release/* branches
+rem ------------------------------------------------------------
+
+if /I not "%BRANCH:~0,8%"=="release/" goto generate_version
+
+set "FAIL_DEFINE=INVALID_RELEASE_BUILD"
 
 git -C "%REPO%" status --porcelain -- . ":(exclude)Portable-Alarm-System/BasicPortableAlarmSystem.vcxproj" > "%GITTMP%"
 for %%A in ("%GITTMP%") do set SIZE=%%~zA
@@ -55,7 +60,18 @@ if /I not "%LOCAL_HASH%"=="%REMOTE_HASH%" (
 	exit /b 1
 )
 
+rem ------------------------------------------------------------
+rem Generate version for every branch
+rem ------------------------------------------------------------
+
+:generate_version
+
 git -C "%REPO%" rev-parse --short=7 HEAD > "%GITTMP%"
+if errorlevel 1 (
+	call :fail "Cannot determine Git version."
+	exit /b 1
+)
+
 set /p GIT_HASH=<"%GITTMP%"
 
 > "%TMP%" echo #pragma once
@@ -64,13 +80,12 @@ set /p GIT_HASH=<"%GITTMP%"
 move /y "%TMP%" "%OUT%" >nul
 del "%GITTMP%" >nul 2>&1
 
-echo Git branch: %BRANCH%
 echo Git version: %GIT_HASH%
 exit /b 0
 
 :fail
 > "%OUT%" echo #pragma once
->> "%OUT%" echo #error INVALID_RELEASE_BUILD
+>> "%OUT%" echo #error %FAIL_DEFINE%
 del "%GITTMP%" >nul 2>&1
 echo ERROR: %~1
 exit /b 0

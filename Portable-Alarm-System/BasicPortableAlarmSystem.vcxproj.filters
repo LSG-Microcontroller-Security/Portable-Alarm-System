@@ -20,6 +20,9 @@
     <Filter Include="documents\images">
       <UniqueIdentifier>{163dcffb-fd64-4cbe-9ba6-893c20713499}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hash-code-generator">
+      <UniqueIdentifier>{2d86c8e2-2b60-40d2-bffb-af18a61e1c2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Portable-Alarm-System.ino" />
@@ -50,6 +53,10 @@
     <None Include="..\Documents\Portable volantino.docx">
       <Filter>documents</Filter>
     </None>
+    <None Include="GenerateGitVersion.bat">
+      <Filter>hash-code-generator</Filter>
+    </None>
+    <None Include="..\.github\workflows\firmware-ci.yml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h">
@@ -70,6 +77,9 @@
     <ClInclude Include="mf_repository_SimRepository.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="GitVersion.h">
+      <Filter>hash-code-generator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\SitoPortable\photo usate\IMG_20190405_110031.jpg">
@@ -84,5 +94,10 @@
     <Image Include="..\Documents\images\Presentation\images\ConfigurationMenu.png">
       <Filter>documents\images</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="board.txt">
+      <Filter>hash-code-generator</Filter>
+    </Text>
   </ItemGroup>
 </Project>

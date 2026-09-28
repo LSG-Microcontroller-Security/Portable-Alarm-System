@@ -32,9 +32,6 @@
     <ClCompile Include="BluetoothFrameWriter.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="mf_repository_SimRepository.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Eagle\ChargeStepUpBoard.brd">
@@ -72,9 +69,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="BluetoothCommandUtil.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="mf_repository_SimRepository.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="GitVersion.h">

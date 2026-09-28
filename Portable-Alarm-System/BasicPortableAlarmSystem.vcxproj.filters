@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Header Files">
@@ -8,9 +8,33 @@
     <Filter Include="Eagle">
       <UniqueIdentifier>{ae09fb39-de21-44ce-8e7b-5fd0b15484ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="commons">
+      <UniqueIdentifier>{f0c25143-8e3d-498e-80f3-06fbd9c7d389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{db4fb0da-6c4f-4064-a172-445e7028e9d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="documents">
+      <UniqueIdentifier>{59c49bba-bde6-43e8-a579-883737246f67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="documents\images">
+      <UniqueIdentifier>{163dcffb-fd64-4cbe-9ba6-893c20713499}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hash-code-generator">
+      <UniqueIdentifier>{2d86c8e2-2b60-40d2-bffb-af18a61e1c2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Portable-Alarm-System.ino" />
+    <ClCompile Include="BluetoothDynamicMenu.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="BluetoothFrameWriter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="mf_repository_SimRepository.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Eagle\ChargeStepUpBoard.brd">
@@ -25,10 +49,55 @@
     <None Include="..\Eagle\PortableAlarmSystem2.brd">
       <Filter>Eagle</Filter>
     </None>
+    <None Include="AGENTS.md" />
+    <None Include="..\Documents\Portable volantino.docx">
+      <Filter>documents</Filter>
+    </None>
+    <None Include="GenerateGitVersion.bat">
+      <Filter>hash-code-generator</Filter>
+    </None>
+    <None Include="..\.github\workflows\firmware-ci.yml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\MicroControllerTeamProject\libraries\MF_Commons\src\mf_commons_commonsLayer.h">
+      <Filter>commons</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothDynamicMenu.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothFrameWriter.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothCommandUtil.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="mf_repository_SimRepository.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="GitVersion.h">
+      <Filter>hash-code-generator</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\SitoPortable\photo usate\IMG_20190405_110031.jpg">
+      <Filter>documents\images</Filter>
+    </Image>
+    <Image Include="..\SitoPortable\photo usate\portable1.png">
+      <Filter>documents\images</Filter>
+    </Image>
+    <Image Include="..\SitoPortable\photo usate\terza.png">
+      <Filter>documents\images</Filter>
+    </Image>
+    <Image Include="..\Documents\images\Presentation\images\ConfigurationMenu.png">
+      <Filter>documents\images</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="board.txt">
+      <Filter>hash-code-generator</Filter>
+    </Text>
   </ItemGroup>
 </Project>

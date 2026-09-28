@@ -1,0 +1,68 @@
+name: Firmware CI
+
+on:
+  pull_request:
+    branches:
+      - develope
+      - master
+      - 'release/**'
+
+  push:
+    branches:
+      - develope
+      - master
+      - 'release/**'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  firmware-build:
+    name: Build firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Portable Alarm System
+        uses: actions/checkout@v4
+
+      - name: Checkout shared libraries
+        uses: actions/checkout@v4
+        with:
+          repository: MicroControllerTeamProject/libraries
+          ref: develope
+          path: external-libraries
+
+      - name: Set up Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install Arduino AVR core
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+
+      - name: Prepare firmware libraries
+        run: |
+          mkdir -p ci-libraries
+          cp -r external-libraries/MF_Commons ci-libraries/
+          cp -r external-libraries/MF_ISerial ci-libraries/
+          cp -r external-libraries/MF_SerialUtils ci-libraries/
+          cp -r external-libraries/MF_HardwareSerialAdapter ci-libraries/
+          cp -r external-libraries/MF_SoftwareSerialAdapter ci-libraries/
+          cp -r external-libraries/MF_AvrMicroRepository ci-libraries/
+          cp -r external-libraries/MF_BlueToothRepository ci-libraries/
+          cp -r external-libraries/LSGEEPromRW ci-libraries/
+          cp -r external-libraries/LSG_ActivityManager ci-libraries/
+
+      - name: Create CI GitVersion.h
+        run: |
+          echo '#pragma once' > Portable-Alarm-System/GitVersion.h
+          echo '#define GIT_VERSION "CI"' >> Portable-Alarm-System/GitVersion.h
+
+      - name: Compile firmware
+        run: |
+          arduino-cli compile \
+            --fqbn arduino:avr:nano \
+            --libraries "$GITHUB_WORKSPACE/ci-libraries" \
+            "$GITHUB_WORKSPACE/Portable-Alarm-System"

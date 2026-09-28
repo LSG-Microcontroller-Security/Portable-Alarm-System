@@ -6,4 +6,7 @@
   <ItemGroup>
     <ClInclude Include="__vm\.Portable-Alarm-Initialized.vsarduino.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="README.txt" />
+  </ItemGroup>
 </Project>

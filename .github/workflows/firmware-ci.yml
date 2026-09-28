@@ -48,6 +48,7 @@ jobs:
           cp -r external-libraries/MF_Commons ci-libraries/
           cp -r external-libraries/MF_ISerial ci-libraries/
           cp -r external-libraries/MF_SerialUtils ci-libraries/
+          cp -r external-libraries/MF_SimRepository ci-libraries/
           cp -r external-libraries/MF_HardwareSerialAdapter ci-libraries/
           cp -r external-libraries/MF_SoftwareSerialAdapter ci-libraries/
           cp -r external-libraries/MF_AvrMicroRepository ci-libraries/

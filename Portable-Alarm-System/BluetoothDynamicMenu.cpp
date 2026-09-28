@@ -120,7 +120,7 @@ PGM_P BluetoothDynamicMenu::calculate_battery_level(float battery_level) {
     return BT_TEXT("[||||]+");
 }
 void BluetoothDynamicMenu::loadMainMenu() {
-    bluetooth_frame_writer.send_value_frame(_isAlarmOn ? BT_TEXT("Alarm ON") : BT_TEXT("Alarm OFF"), version, BluetoothCommandUtil::Title);
+    bluetooth_frame_writer.send_value_frame(_isAlarmOn ? BT_TEXT("Alarm ON-") : BT_TEXT("Alarm OFF-"), version, BluetoothCommandUtil::Title);
     bluetooth_frame_writer.send_program_frame(BT_TEXT("Configuration"), BluetoothCommandUtil::Menu, 1U);
     bluetooth_frame_writer.send_program_frame(BT_TEXT("Security"), BluetoothCommandUtil::Menu, 4U);
     bluetooth_frame_writer.send_program_frame(_isAlarmOn ? BT_TEXT("Alarm OFF") : BT_TEXT("Alarm On"), BluetoothCommandUtil::Command, _isAlarmOn ? 3U : 2U);

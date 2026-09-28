@@ -3,8 +3,8 @@ setlocal EnableExtensions
 
 set "REPO=%~dp0.."
 set "BUILD_PATH=%~1"
-set "OUT=%BUILD_PATH%\GitVersion.h"
-set "TMP=%BUILD_PATH%\GitVersion.tmp"
+set "OUT=%~dp0GitVersion.h"
+set "TMP=%~dp0GitVersion.tmp"
 set "GITTMP=%TEMP%\PortableAlarmGitVersion.txt"
 set "FAIL_DEFINE=INVALID_GIT_BUILD"
 

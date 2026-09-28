@@ -53,7 +53,7 @@ if /I not "%LOCAL_HASH%"=="%REMOTE_HASH%" (
 	exit /b 1
 )
 
-git -C "%REPO%" rev-parse --short=8 HEAD > "%GITTMP%"
+git -C "%REPO%" rev-parse --short=7 HEAD > "%GITTMP%"
 set /p GIT_HASH=<"%GITTMP%"
 
 > "%TMP%" echo #pragma once

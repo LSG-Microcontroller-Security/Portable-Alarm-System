@@ -21,8 +21,8 @@ if errorlevel 1 (
 git -C "%REPO%" rev-parse --abbrev-ref HEAD > "%GITTMP%"
 set /p BRANCH=<"%GITTMP%"
 
-if /I not "%BRANCH%"=="release" (
-	call :fail "Current branch is not release."
+if /I not "%BRANCH:~0,8%"=="release/" (
+	call :fail "Current branch is not a release branch."
 	echo Current branch: %BRANCH%
 	exit /b 1
 )
@@ -35,9 +35,9 @@ if not "%SIZE%"=="0" (
 	exit /b 1
 )
 
-git -C "%REPO%" fetch origin release --quiet
+git -C "%REPO%" fetch origin "%BRANCH%" --quiet
 if errorlevel 1 (
-	call :fail "Cannot fetch origin/release."
+	call :fail "Cannot fetch origin/%BRANCH%."
 	exit /b 1
 )
 
@@ -48,7 +48,8 @@ git -C "%REPO%" rev-parse FETCH_HEAD > "%GITTMP%"
 set /p REMOTE_HASH=<"%GITTMP%"
 
 if /I not "%LOCAL_HASH%"=="%REMOTE_HASH%" (
-	call :fail "Local release is not aligned with origin/release."
+	call :fail "Local release branch is not aligned with origin."
+	echo Branch: %BRANCH%
 	echo Local : %LOCAL_HASH%
 	echo Origin: %REMOTE_HASH%
 	exit /b 1
@@ -63,6 +64,7 @@ set /p GIT_HASH=<"%GITTMP%"
 move /y "%TMP%" "%OUT%" >nul
 del "%GITTMP%" >nul 2>&1
 
+echo Git branch: %BRANCH%
 echo Git version: %GIT_HASH%
 exit /b 0
 

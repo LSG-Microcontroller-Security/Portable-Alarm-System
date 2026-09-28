@@ -2,9 +2,15 @@
 setlocal EnableExtensions
 
 set "REPO=%~dp0.."
-set "OUT=%~dp0GitVersion.h"
-set "TMP=%~dp0GitVersion.tmp"
+set "BUILD_PATH=%~1"
+set "OUT=%BUILD_PATH%\GitVersion.h"
+set "TMP=%BUILD_PATH%\GitVersion.tmp"
 set "GITTMP=%TEMP%\PortableAlarmGitVersion.txt"
+
+if "%BUILD_PATH%"=="" (
+	echo ERROR: Build path not provided.
+	exit /b 1
+)
 
 git -C "%REPO%" rev-parse --is-inside-work-tree >nul 2>&1
 if errorlevel 1 (

@@ -25,10 +25,14 @@ set /p BRANCH=<"%GITTMP%"
 echo Git branch: %BRANCH%
 
 rem ------------------------------------------------------------
-rem Strict validation only for release/* branches
+rem Non-release branches: development build marker
 rem ------------------------------------------------------------
 
-if /I not "%BRANCH:~0,8%"=="release/" goto generate_version
+if /I not "%BRANCH:~0,8%"=="release/" goto generate_development_version
+
+rem ------------------------------------------------------------
+rem Strict validation only for release/* branches
+rem ------------------------------------------------------------
 
 set "FAIL_DEFINE=INVALID_RELEASE_BUILD"
 
@@ -61,10 +65,8 @@ if /I not "%LOCAL_HASH%"=="%REMOTE_HASH%" (
 )
 
 rem ------------------------------------------------------------
-rem Generate version for every branch
+rem Generate real Git hash for release/*
 rem ------------------------------------------------------------
-
-:generate_version
 
 git -C "%REPO%" rev-parse --short=7 HEAD > "%GITTMP%"
 if errorlevel 1 (
@@ -81,6 +83,21 @@ move /y "%TMP%" "%OUT%" >nul
 del "%GITTMP%" >nul 2>&1
 
 echo Git version: %GIT_HASH%
+exit /b 0
+
+rem ------------------------------------------------------------
+rem Development version
+rem ------------------------------------------------------------
+
+:generate_development_version
+
+> "%TMP%" echo #pragma once
+>> "%TMP%" echo #define GIT_VERSION "XXXXXXX"
+
+move /y "%TMP%" "%OUT%" >nul
+del "%GITTMP%" >nul 2>&1
+
+echo Git version: XXXXXXX
 exit /b 0
 
 :fail

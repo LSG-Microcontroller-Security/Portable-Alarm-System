@@ -202,6 +202,8 @@
   <ItemGroup>
     <None Include="..\.github\workflows\firmware-ci.yml" />
     <None Include="..\Documents\Portable volantino.docx" />
+    <None Include="..\Documents\Portable_Alarm_System_Release_Flow_User_Guide.docx" />
+    <None Include="..\Documents\Portable_Alarm_System_Release_Flow_User_Guide_EN.docx" />
     <None Include="..\Eagle\ChargeStepUpBoard.brd" />
     <None Include="..\Eagle\ChargeStepUpBoard2.brd" />
     <None Include="..\Eagle\PortableAlarmSystem.brd" />

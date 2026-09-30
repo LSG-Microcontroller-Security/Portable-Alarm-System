@@ -1,5 +1,4 @@
 #include "BluetoothFrameWriter.h"
-
 BluetoothFrameWriter::BluetoothFrameWriter(BlueToothRepository& bluetoothRepository) : bluetoothRepository(bluetoothRepository) {
 }
 void BluetoothFrameWriter::append_char(char* destination, uint8_t capacity, char value) {

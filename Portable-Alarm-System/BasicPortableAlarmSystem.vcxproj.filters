@@ -60,6 +60,7 @@
     <None Include="..\Documents\Portable_Alarm_System_Release_Flow_User_Guide_EN.docx">
       <Filter>documents</Filter>
     </None>
+    <None Include="..\.github\workflows\branch-policy.yml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h">

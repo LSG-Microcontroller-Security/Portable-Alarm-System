@@ -5,7 +5,7 @@
 */
 
 // the setup function runs once when you press reset or power the board
-void setup() {
+void setup() { 
 	pinMode(13, OUTPUT);
 	digitalWrite(13, HIGH);
 	return;

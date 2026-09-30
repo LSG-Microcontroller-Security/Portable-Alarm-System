@@ -54,13 +54,13 @@
       <Filter>hash-code-generator</Filter>
     </None>
     <None Include="..\.github\workflows\firmware-ci.yml" />
-    <None Include="..\Documents\Portable_Alarm_System_Release_Flow_User_Guide.docx">
-      <Filter>documents</Filter>
-    </None>
     <None Include="..\Documents\Portable_Alarm_System_Release_Flow_User_Guide_EN.docx">
       <Filter>documents</Filter>
     </None>
     <None Include="..\.github\workflows\branch-policy.yml" />
+    <None Include="..\Documents\Portable_Alarm_System_Release_Flow_User_Guide_IT.docx">
+      <Filter>documents</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.Portable-Alarm-System.vsarduino.h">

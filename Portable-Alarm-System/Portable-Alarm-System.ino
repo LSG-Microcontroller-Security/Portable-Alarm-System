@@ -116,6 +116,12 @@ char _bufExternalInterruptIsON[BUFSIZEEXTERNALINTERRUPTISON];
 const int BUFSIZEBUZZERISON = 2;
 char _bufBuzzerIsON[BUFSIZEBUZZERISON];
 void setup() {
+	Serial.begin(9600);
+	Serial.print(F("Firmware Git: "));
+	Serial.println(F(GIT_VERSION));
+	Serial.print(F("Libraries Git: "));
+	Serial.println(F(GIT_LIBRARIES_VERSION));
+	Serial.flush();
 	sim_repository.begin(19200);
 	inizializePins();
 	blinkLed(50,3);

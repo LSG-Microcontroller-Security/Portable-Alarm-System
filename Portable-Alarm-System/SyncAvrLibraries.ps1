@@ -43,6 +43,10 @@ try {
         $localSources = @($mapping.sources | Where-Object { $null -ne $_ })
     }
     $changed = $false
+    $developmentBranch = $branch -match '^(develop|feature/.+|fix/.+|bugfix/.+|task/.+|hotfix/.+)$'
+    $hasDirtyLibraries = $false
+    $localRevisions = @()
+    $pendingUpdates = @()
     foreach ($source in $repositories) {
         $candidates = @($localSources | Where-Object {
             (Normalize-Remote $_.url) -ieq (Normalize-Remote $source.url)
@@ -69,19 +73,36 @@ try {
         }
         $status = Invoke-Git $libraryRoot @('status', '--porcelain')
         if ($status) {
-            throw "Uncommitted changes in local libraries: $libraryRoot. Commit or restore them before building."
+            if (-not $developmentBranch) {
+                throw "Uncommitted changes in local libraries: $libraryRoot. Commit or restore them before building."
+            }
+            $hasDirtyLibraries = $true
+            Write-Warning "Uncommitted local AVR library changes in $libraryRoot. Development build allowed; its libraries are not reproducible from Git."
         }
         $head = Invoke-Git $libraryRoot @('rev-parse', 'HEAD')
         if ($head -notmatch '^[a-fA-F0-9]{40}$') { throw "Invalid local Git SHA for $libraryRoot" }
+        $localRevisions += [pscustomobject]@{ url = $source.url; ref = $head }
         if ($source.ref -ne $head) {
-            if ($branch -notmatch '^(develop|feature/.+|fix/.+|bugfix/.+|task/.+|hotfix/.+)$') {
+            if (-not $developmentBranch) {
                 throw "Library version mismatch on protected/non-development branch '$branch'. Expected $($source.ref), local $head. Update and commit the manifest on a development branch first."
             }
-            Write-Host "AVR libraries: $($source.url) $($source.ref) -> $head"
-            $source.ref = $head
-            $changed = $true
+            $pendingUpdates += [pscustomobject]@{ source = $source; head = $head }
         }
         else { Write-Host "AVR libraries unchanged: $head" }
+    }
+    # Never record a partial set of local commits while any library has
+    # uncommitted changes. Only clean development checkouts update the manifest.
+    if ($hasDirtyLibraries) {
+        if ($pendingUpdates.Count -gt 0) {
+            Write-Warning 'The AVR library manifest was NOT updated because local libraries are dirty. Commit the libraries, then rebuild before opening a firmware PR.'
+        }
+    }
+    else {
+        foreach ($update in $pendingUpdates) {
+            Write-Host "AVR libraries: $($update.source.url) $($update.source.ref) -> $($update.head)"
+            $update.source.ref = $update.head
+            $changed = $true
+        }
     }
     if ($changed) {
         $json = $manifest | ConvertTo-Json -Depth 30
@@ -91,7 +112,7 @@ try {
     # The generated header is ignored by Git. Its paired version references
     # are reproducible from the committed firmware and library manifest.
     $versions = @()
-    foreach ($source in $repositories) { $versions += "$($source.url)@$($source.ref)" }
+    foreach ($revision in $localRevisions) { $versions += "$($revision.url)@$($revision.ref)" }
     foreach ($lib in @($manifest.arduinoLibraryManager | Where-Object { $null -ne $_ })) {
         if ([string]::IsNullOrWhiteSpace($lib.version)) { throw "Unpinned Arduino Library Manager version: $($lib.name)" }
         $versions += "$($lib.name)@$($lib.version)"
@@ -99,11 +120,13 @@ try {
     # Same seven-character interface as GIT_VERSION, including on development branches.
     # One Git repository: its abbreviated commit. Multiple dependencies: a
     # deterministic seven-character fingerprint of all pinned references.
+    # Development builds do not claim a reproducible library revision.
+    # Keep the same XXXXXXX marker already used by firmware in develop/feature.
     $shortVersion = 'XXXXXXX'
-    if ($versions.Count -eq 1 -and $repositories.Count -eq 1) {
-        $shortVersion = ([string]$repositories[0].ref).Substring(0, 7).ToLowerInvariant()
+    if (-not $developmentBranch -and $versions.Count -eq 1 -and $repositories.Count -eq 1) {
+        $shortVersion = ([string]$localRevisions[0].ref).Substring(0, 7).ToLowerInvariant()
     }
-    elseif ($versions.Count -gt 0) {
+    elseif (-not $developmentBranch -and $versions.Count -gt 0) {
         $data = [System.Text.Encoding]::UTF8.GetBytes(($versions -join ';'))
         $sha256 = [System.Security.Cryptography.SHA256]::Create()
         try { $digest = $sha256.ComputeHash($data) }

@@ -8,6 +8,9 @@
 #endif
 //#include <MemoryFree.h>
 //#include <pgmStrToRAM.h>
+#ifndef _DEBUG_FOR_SERIAL
+#define _DEBUG_FOR_SERIAL 1
+#endif
 #include <mf_commons_commonsLayer.h>
 #include <mf_adapter_HardwareSerialAdapter.h>
 #include <mf_adapter_SoftwareSerialAdapter.h>
@@ -54,7 +57,7 @@ const byte _addressStartBufTemperatureMax = 16;
 const byte _addressStartBufPirSensorIsON = 19;
 const byte _addressStartDeviceAddress = 21;
 const byte _addressStartDeviceName = 36;
-const byte _addressStartFindOutPhonesON = 51;
+const byte address_find_mode = 51;
 const byte _addressDBPhoneIsON = 55;
 const byte _addressStartBufPhoneNumberAlternative = 57;
 const byte _addressOffSetTemperature = 95;
@@ -90,7 +93,7 @@ unsigned long _timeToTurnOnAlarm = millis() + 300000;
 //String _apn = "";
 bool _isDeviceDetected = false;
 bool _isFindBTModeActive = false;
-const char* _BTVersion = "V3";
+const char* _BTVersion = "V2";
 const int BUFSIZEPHONENUMBER = 11;
 const int BUFSIZEPHONENUMBERALTERANATIVE = 11;
 const int BUFSIZEPIRSENSORISON = 2;
@@ -189,7 +192,7 @@ void initilizeEEPromData() {
 	eeprom_rw.eeprom_read_string(_addressStartBufPhoneNumberAlternative, _phoneNumberAlternative, BUFSIZEPHONENUMBERALTERANATIVE);
 	eeprom_rw.eeprom_read_string(_addressDBPhoneIsON, _bufDbPhoneON, BUFSIZEDBPHONEON);
 	_phoneNumbers = atoi(&_bufDbPhoneON[0]);
-	eeprom_rw.eeprom_read_string(_addressStartFindOutPhonesON, _bufFindOutPhonesON, BUFSIZEFINDOUTPHONESON);
+	eeprom_rw.eeprom_read_string(address_find_mode, _bufFindOutPhonesON, BUFSIZEFINDOUTPHONESON);
 	_findOutPhonesMode = atoi(&_bufFindOutPhonesON[0]);
 	eeprom_rw.eeprom_read_string(_addressStartBufPirSensorIsON, _bufPirSensorIsON, BUFSIZEPIRSENSORISON);
 	_isPIRSensorActivated = atoi(&_bufPirSensorIsON[0]);
@@ -268,6 +271,10 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 			bluetooth_repository.set_to_master_mode();
 		}
 		_isFindBTModeActive = true;
+		DEBUG_SERIAL_PRINT(F("FindMode:"));
+		DEBUG_SERIAL_PRINT(_findOutPhonesMode);
+		DEBUG_SERIAL_PRINT(F(" FindLoop:"));
+		DEBUG_SERIAL_PRINTLN(_delayFindMe);
 	}
 	_isDeviceDetected = false;
 	for (uint8_t i = 0; i < _delayFindMe; i++) {
@@ -288,6 +295,7 @@ void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 		blinkLedHideMode();
 	}
 	else if (!_isDeviceDetected && _findOutPhonesMode == 2) {
+		DEBUG_SERIAL_PRINTLN(F("Telefono assente"));
 		callSim900();
 	}
 }
@@ -306,7 +314,7 @@ void internalMotionDetectActivity() {
 	blinkLedHideMode();
 	detachInterrupt(0);
 	_what_is_happened[0] = 'M';
-	DEBUG_SERIAL_PRINTLN(F("Int.Interr"));
+	DEBUG_SERIAL_PRINTLN(F("Movimento interno"));
 	callSim900();
 	_isMasterMode = false;
 	EIFR |= (1 << INTF0);
@@ -332,7 +340,7 @@ void externalMotionDetectActivity() {
 	blinkLedHideMode();
 	detachInterrupt(1);
 	_what_is_happened[0] = 'E';
-	DEBUG_SERIAL_PRINTLN(F("Ext.Interr"));
+	DEBUG_SERIAL_PRINTLN(F("Contatto esterno"));
 	callSim900();
 	_isMasterMode = false;
 	EIFR |= (1 << INTF1);
@@ -467,7 +475,11 @@ void pirSensorActivity() {
 		if (digitalRead(_pin_pir)) {
 			blinkLedHideMode();
 			_what_is_happened[0] = 'P';
-			DEBUG_SERIAL_PRINTLN(F("pir sensor"));
+#if _DEBUG_FOR_SERIAL
+			if (_findOutPhonesMode != 1 || !_isDeviceDetected) {
+				DEBUG_SERIAL_PRINTLN(F("PIR attivo"));
+			}
+#endif
 			if (_findOutPhonesMode == 1) {
 				if (!_isDeviceDetected) {
 					if (_isBuzzerOn) {
@@ -493,7 +505,7 @@ void internalTemperatureActivity() {
 	if (_delay_for_temperature.IsDelayTimeFinished(true)) {
 		if ((uint8_t)getTemp() > _tempMax) {
 			_what_is_happened[0] = 'T';
-			DEBUG_SERIAL_PRINTLN(F("Temperature high."));
+			DEBUG_SERIAL_PRINTLN(F("Temperatura alta"));
 			callSim900();
 		}
 	}
@@ -504,7 +516,7 @@ void voltageActivity() {
 		_voltageMinValue = 3.25;
 		if (_voltageValue < _voltageMinValue) {
 			_what_is_happened[0] = 'V';
-			DEBUG_SERIAL_PRINTLN(F("Voltage low."));
+			DEBUG_SERIAL_PRINTLN(F("Batteria bassa"));
 			callSim900();
 		}
 	}
@@ -653,6 +665,7 @@ void activateFunctionAlarm() {
 	_timeToTurnOnAlarm = 0;
 	_isDisableCall = false;
 	_isAlarmOn = true;
+	DEBUG_SERIAL_PRINTLN(F("Avvio allarme SMS"));
 	callSim900();
 }
 double getTemp(void) {

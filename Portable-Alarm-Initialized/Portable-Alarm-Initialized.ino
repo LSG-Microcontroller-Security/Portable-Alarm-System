@@ -7,7 +7,7 @@
 #include <mf_repository_BlueToothRepository.h>
 
 #ifndef EEPROM_INITIALIZATION_ENABLED
-#define EEPROM_INITIALIZATION_ENABLED 0U
+#define EEPROM_INITIALIZATION_ENABLED 1U
 #endif
 
 const uint8_t configuration_version_address = 0U;
@@ -19,11 +19,10 @@ const uint8_t address_temperature_max = 16U;
 const uint8_t address_pir_enabled = 19U;
 const uint8_t address_device_1 = 21U;
 const uint8_t address_device_name_1 = 36U;
-const uint8_t address_find_phones_enabled = 51U;
+const uint8_t address_find_mode = 51U;
 const uint8_t address_bluetooth_sleep_enabled = 53U;
 const uint8_t address_selected_phone = 55U;
 const uint8_t address_alternative_phone_number = 57U;
-const uint8_t address_find_mode = 68U;
 const uint8_t address_apn = 70U;
 const uint8_t address_temperature_offset = 95U;
 const uint8_t address_find_delay = 100U;
@@ -68,13 +67,12 @@ void initialize_configuration() {
 	write_eeprom_text(address_temperature_enabled, "0");
 	write_eeprom_text(address_temperature_max, "60");
 	write_eeprom_text(address_pir_enabled, "0");
-	write_eeprom_text(address_device_1, "6045,CB,3122BD");
-	write_eeprom_text(address_device_name_1, "ASUS_Z017D");
-	write_eeprom_text(address_find_phones_enabled, "0");
+	write_eeprom_text(address_device_1, "8846,04,03B960");
+	write_eeprom_text(address_device_name_1, "Redmi12");
+	write_eeprom_text(address_find_mode, "0");
 	write_eeprom_text(address_bluetooth_sleep_enabled, "1");
 	write_eeprom_text(address_selected_phone, "1");
 	write_eeprom_text(address_alternative_phone_number, "");
-	write_eeprom_text(address_find_mode, "0");
 	write_eeprom_text(address_apn, "");
 	write_eeprom_text(address_temperature_offset, "324");
 	write_eeprom_text(address_find_delay, "1");

@@ -53,7 +53,7 @@ namespace {
         AddressPirSensorIsOn          = 19U,
         AddressDeviceAddress          = 21U,
         AddressDeviceName             = 36U,
-        AddressFindOutPhonesOn        = 51U,
+        address_find_mode             = 51U,
         AddressDbPhoneIsOn            = 55U,
         AddressPhoneNumberAlternative = 57U,
         AddressOffsetTemperature      = 95U,
@@ -265,7 +265,7 @@ void BluetoothDynamicMenu::process() {
     }
     else if (contains(bluetooth_data, BT_TEXT("D012"))) {
         if (read_value(bluetooth_data, value, sizeof(value)) && is_numeric(value) && copy_value(_bufFindOutPhonesON, 2U, value)) {
-            write_eeprom(AddressFindOutPhonesOn, _bufFindOutPhonesON);
+            write_eeprom(EepromAddress::address_find_mode, _bufFindOutPhonesON);
             _findOutPhonesMode = atoi(_bufFindOutPhonesON);
             _isBTSleepON = _findOutPhonesMode == 0U ? 1U : 0U;
             if (_findOutPhonesMode == 2U) {

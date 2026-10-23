@@ -127,7 +127,7 @@ void setup() {
 	Serial.flush();
 	sim_repository.begin(19200);
 	inizializePins();
-	blinkLed(50,3);
+	blinkLed(50, 3);
 	inizializeInterrupts();
 	bluetooth_repository.set_to_slave_mode();
 	//my_sim900.getCCLK();
@@ -248,18 +248,6 @@ void turnOffBluetoohIfTimeIsOver() {
 		bluetooth_repository.turnOffBlueTooth();
 	}
 }
-//void turnOnBlueToothIfMotionIsDetected()
-//{
-//	if (_isOnMotionDetect
-//		&& !_isAlarmOn
-//		&& !bluetooth_repository.isBluetoothOn()
-//		&& _isBTSleepON
-//		)
-//	{
-//		_isOnMotionDetect = false;
-//		turnOnBlueToothAndSetTurnOffTimer(false);
-//	}
-//}
 void findOutPhonesONAndSetBluetoothInMasterModeActivity() {
 	if (_isDisableCall) { return; }
 	if (!_isFindBTModeActive) {
@@ -347,92 +335,6 @@ void externalMotionDetectActivity() {
 	_is_external_interrupt_detected = false;
 	attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
 }
-//void motionDetectActivity() {
-//	if (_isDisableCall || _findOutPhonesMode == 2 || _findOutPhonesMode == 1 || _isPIRSensorActivated) {
-//		_isOnMotionDetect = false;
-//		return;
-//	}
-//	if ((_isExternalInterruptOn & 0x01U) != 0U && !(_isExtenalInterruptNormalyClosed ^ digitalRead(3))) {
-//		if ((_isExternalInterruptOn & 0x02U) != 0U) {
-//			_isExternalInterruptOn &= static_cast<uint8_t>(~0x02U);
-//			sim_repository.hangUp();
-//		}
-//		_isOnExternalMotionDetect = false;
-//	}
-//	if ((_isExternalInterruptOn & 0x01U) != 0U && (_isExtenalInterruptNormalyClosed ^ digitalRead(3)) && sim_repository.isCallActive()) {
-//		delay(250UL);
-//		return;
-//	}
-//
-//	//if ((millis() - _millsStart) > _sensitivityAlarm)
-//	//{
-//	//	_millsStart = 0;
-//	//	_isFirstTilt = true;
-//	//}
-//
-//	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && _isExternalInterruptOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))))
-//	//if ((_isOnMotionDetect && _isAlarmOn) || (_isAlarmOn && (_isExtenalInterruptNormalyClosed ^ digitalRead(3))) || _isExternalInterruptOn))	/*if(true)*/
-//
-//	if (_isAlarmOn && (
-//		(_isOnMotionDetect && ((_isExternalInterruptOn & 0x01U) == 0U))
-//		|| ((_isOnExternalMotionDetect || (_isExtenalInterruptNormalyClosed ^ digitalRead(3)))
-//			&& ((_isExternalInterruptOn & 0x01U) != 0U))
-//		)) {
-//
-//		blinkLedHideMode();
-//
-//		detachInterrupt(0);
-//		detachInterrupt(1);
-//
-//		_what_is_happened[0] = 'M';
-//		DEBUG_SERIAL_PRINTLN(F("Motion detected"));
-//
-//		if (_findOutPhonesMode == 1) {
-//			if (!_isDeviceDetected) {
-//				if ((_isExternalInterruptOn & 0x01U) != 0U) { _isExternalInterruptOn |= 0x02U; }
-//				callSim900();
-//				_isMasterMode = false;
-//			}
-//		}
-//		else {
-//			if ((_isExternalInterruptOn & 0x01U) != 0U) { _isExternalInterruptOn |= 0x02U; }
-//			callSim900();
-//			_isMasterMode = false;
-//		}
-//
-//		////Accendo bluetooth con ritardo annesso solo se è scattato allarme,troppo critico
-//		////per perdere tempo se non scattato allarme.
-//		//if (!bluetooth_repository.isBluetoothOn() && _findOutPhonesMode == 0)
-//		//{
-//		//	delay(30000);
-//		//	turnOnBlueToothAndSetTurnOffTimer(false);
-//		//}
-//		////}
-//
-//		//readIncomingSMS();
-//
-//		/*	readIncomingSMS();
-//
-//			findOutPhonesONAndSetBluetoothInMasterModeActivity();*/
-//
-//
-//		EIFR |= 1 << INTF1; //clear external interrupt 1
-//
-//		EIFR |= 1 << INTF0; //clear external interrupt 0
-//		//EIFR = 0x01;
-//		sei();
-//
-//		attachInterrupt(0, motionTiltInternalInterrupt, RISING);
-//		attachInterrupt(1, motionTiltExternalInterrupt, CHANGE);
-//
-//		_isOnMotionDetect = false;
-//		_isOnExternalMotionDetect = false;
-//	}
-//}
-//void restartBlueTooth()
-//{
-//	Serial.readString();
-//}
 void turnOnBlueToothAndSetTurnOffTimer() {
 	Serial.flush();
 	bluetooth_repository.set_to_slave_mode();
@@ -654,7 +556,7 @@ void listOfSmsCommands(const char* command) {
 	}
 	// F1-F9: attiva la modalità il dispositivo è ancora rilevato 
 	if (command[0] == 'F' && command[1] >= '1' && command[1] <= '9') {
-		deactivateOtherAlarmModes(); 
+		deactivateOtherAlarmModes();
 		_isBTSleepON = false;
 		_findOutPhonesMode = 2;
 		_delayFindMe = command[1] - '0';

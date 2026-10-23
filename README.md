@@ -102,6 +102,16 @@ Il repository include uno sketch separato, `Portable-Alarm-Initialized`, per ini
 
 All'avvio il firmware principale stampa `Firmware Git` e `Libraries Git`, consentendo di associare i test hardware alle revisioni del firmware e delle librerie. Le macro di debug seriale sono gestite separatamente dal menu Bluetooth e possono essere disabilitate nella normale compilazione.
 
+## Visualizzare le versioni del firmware e delle librerie
+
+All'avvio, durante il `setup()`, Portable Alarm System stampa sulla seriale **Firmware Git** (versione Git del firmware) e **Libraries Git** (versione Git delle librerie utilizzate). Queste informazioni permettono di riconoscere le versioni effettivamente caricate sul dispositivo.
+
+Per leggerle, collegare il dispositivo al PC e aprire il **monitor seriale a 9600 baud**. Se le righe iniziali non sono visibili, **riavviare il microcontrollore**, eventualmente tramite reset/DTR, e osservare i messaggi stampati all'avvio.
+
+**Come interpretare le versioni.** Nelle compilazioni di sviluppo su `develop` e `feature/*` viene mostrato `XXXXXXX`: si può compilare e provare il firmware, ma non si sta identificando una release. Compilando su `release/*`, dopo i controlli previsti da Git Project Manager (GPM), vengono invece incorporati l'**hash Git reale del firmware** e l'**identificativo reale delle librerie**. La branch `master` riceve la release validata tramite Pull Request e merge: **non è necessaria una nuova compilazione per il rilascio**.
+
+**Importante:** l'hash reale del firmware viene generato soltanto compilando su `release/*`. Un firmware già compilato e caricato mantiene le versioni incorporate, anche dopo successivi merge Git. L'impostazione **9600 baud è specifica di Portable Alarm System**, non una regola generale di GPM.
+
 ## Risoluzione dei problemi
 
 **Il telefono non viene rilevato in modo affidabile in modalità Find:** provare con l'hotspot Wi-Fi del telefono disattivato e ripetere più volte la ricerca a parità di condizioni. Controllare che indirizzo e nome Bluetooth salvati corrispondano al telefono desiderato e che `N.Phone` selezioni la voce corretta. Verificare che il modulo HC-05 riceva un'alimentazione stabile, in particolare se l'allarme funziona a batteria o tramite convertitori di tensione. Nel codice esaminato la ricerca Bluetooth utilizza per impostazione predefinita il percorso `V2`; non presumere che gli altri percorsi implementativi siano già stati validati sul dispositivo.
@@ -238,6 +248,16 @@ The current firmware includes a movement/tilt interrupt, an external-contact int
 The repository contains a separate `Portable-Alarm-Initialized` sketch for EEPROM initialisation and Bluetooth diagnostics. Its `EEPROM_INITIALIZATION_ENABLED` option is **disabled by default** in the inspected branch. Enabling it causes EEPROM clearing and re-initialisation: back up required settings first and use the tool deliberately.
 
 The main firmware prints `Firmware Git` and `Libraries Git` at startup, allowing hardware tests to be associated with their firmware and library revisions. The serial debug macros are controlled separately from the general Bluetooth menu and may be disabled in a normal build.
+
+## Viewing firmware and library versions
+
+At startup, during `setup()`, Portable Alarm System prints **Firmware Git** (the firmware Git version) and **Libraries Git** (the Git version of the libraries used) to the serial interface. These values identify the versions actually loaded on the device.
+
+To view them, connect the device to a PC and open the **serial monitor at 9600 baud**. If the initial lines are not visible, **restart the microcontroller**, using reset/DTR if necessary, and read the messages printed at startup.
+
+**How to interpret the versions.** Development builds on `develop` and `feature/*` show `XXXXXXX`: building and testing are permitted, but this is not a release identifier. On `release/*`, after the required Git Project Manager (GPM) checks, the build embeds the **real firmware Git hash** and the **real library version identifier**. The `master` branch receives the validated release through a Pull Request and merge: **no new build is required to release it**.
+
+**Important:** the real firmware hash is generated only when building on `release/*`. Firmware that has already been built and uploaded retains its embedded versions, regardless of subsequent Git merges. **9600 baud is specific to Portable Alarm System**, not a general GPM rule.
 
 ## Troubleshooting
 

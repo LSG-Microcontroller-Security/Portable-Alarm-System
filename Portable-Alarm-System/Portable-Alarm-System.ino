@@ -9,7 +9,7 @@
 //#include <MemoryFree.h>
 //#include <pgmStrToRAM.h>
 #ifndef _DEBUG_FOR_SERIAL
-#define _DEBUG_FOR_SERIAL 1
+#define _DEBUG_FOR_SERIAL 0
 #endif
 #include <mf_commons_commonsLayer.h>
 #include <mf_adapter_HardwareSerialAdapter.h>

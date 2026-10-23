@@ -252,3 +252,6 @@ __pycache__/
 # Generated firmware version
 Portable-Alarm-System/GitVersion.h
 Portable-Alarm-System/GitVersion.tmp
+GitVersion.generated.h
+GitVersion.generated.tmp
+!GitVersion.h

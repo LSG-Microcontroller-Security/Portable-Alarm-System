@@ -1,5 +1,148 @@
 # Portable Alarm System
 
+**Italiano:** Apri la sezione in italiano per consultare la guida d'uso.  
+**English:** Expand the English section to read the user guide.
+
+<details>
+<summary><strong>Italiano — Guida all'utilizzo</strong></summary>
+
+Portable Alarm System è un dispositivo compatto e modulare di allarme e monitoraggio, progettato per proteggere oggetti, ambienti, veicoli e altri spazi di dimensioni contenute. Rileva le condizioni di allarme e può chiamare un numero telefonico configurato tramite il modulo GSM. Il Bluetooth consente la configurazione locale e, nelle modalità previste, il rilevamento di uno smartphone autorizzato.
+
+Il firmware è progettato per un microcontrollore compatibile con AVR/Arduino e può utilizzare sensori e accessori esterni.
+
+> **Stato della documentazione:** questa guida descrive il firmware esaminato sulla branch `develop` il 23 ottobre 2026. Alcuni comportamenti dipendono dall'hardware installato, dal telefono, dal modulo Bluetooth e dalla versione del firmware. Prima di affidarsi al sistema di allarme, verificarne il comportamento sul dispositivo reale.
+
+## Avvio rapido
+
+1. Configurare i numeri telefonici autorizzati e, se si utilizza una modalità Find, l'indirizzo e il nome Bluetooth del telefono selezionato. Queste impostazioni si trovano nel menu Bluetooth **Configuration**.
+2. Scegliere una modalità di funzionamento: movimento, contatto esterno, PIR oppure una delle due modalità di rilevamento del telefono (Find).
+3. Verificare la chiamata GSM, il sensore selezionato e la ricerca Bluetooth nelle effettive condizioni di alimentazione e utilizzo del telefono.
+4. Tenere presente che il firmware prevede un timer di inserimento automatico dell'allarme di circa **cinque minuti**. L'accesso ad alcune funzioni del menu Bluetooth azzera e riavvia questo timer. Il comando `Alarm OFF` non garantisce quindi che l'allarme rimanga disattivato indefinitamente.
+
+La schermata principale del menu Bluetooth mostra **Alarm ON/OFF**, la versione del firmware, la temperatura, un'indicazione approssimativa del livello della batteria e `WhatzUp` (codice dell'ultimo evento registrato). Dalla schermata principale si possono aprire i menu **Configuration** e **Security** oppure cambiare lo stato dell'allarme.
+
+## Modalità operative
+
+| Modalità | Funzionamento | Comando SMS |
+| --- | --- | --- |
+| Movimento / inclinazione | Rileva movimento o inclinazione tramite il sensore interno e chiama il numero selezionato quando l'allarme è inserito. Non richiede il rilevamento Bluetooth del telefono. | `Md` |
+| Contatto esterno normalmente aperto | Utilizza il contatto esterno come sorgente dell'allarme. | `Eo` |
+| Contatto esterno normalmente chiuso | Utilizza il contatto esterno come sorgente dell'allarme. | `Ec` |
+| PIR | Utilizza il sensore PIR esterno come sorgente dell'allarme; può essere attivato anche un buzzer opzionale. | `Wc` |
+| **Find Mode 1** (esclusione per telefono presente) | Cerca il telefono autorizzato. Quando lo rileva, inibisce l'allarme di movimento interno (e le chiamate PIR, se il PIR è stato abilitato separatamente). L'attivazione di questa modalità via SMS azzera le altre modalità sensore, compreso il PIR. La logica del contatto esterno è separata. | `N1`–`N9` |
+| **Find Mode 2** (allarme per telefono assente) | Controlla la presenza del telefono autorizzato; se non viene rilevato, può avviare una chiamata GSM. In questa modalità il ciclo principale del firmware esclude i normali allarmi dei sensori. | `F1`–`F9` |
+
+Per i comandi `N1`–`N9` e `F1`–`F9`, la cifra indica **il numero di tentativi di rilevamento del telefono per ciclo di ricerca** (da 1 a 9). Entrambe le modalità utilizzano lo stesso percorso di rilevamento Bluetooth. Il firmware può inoltre avviare una chiamata quando si attivano modalità che richiamano la routine di inserimento dell'allarme, comprese `F1`–`F9`.
+
+Nel codice sono previste impostazioni per **due numeri telefonici** e **due coppie di identificativi Bluetooth**. L'opzione `N.Phone` seleziona il telefono attualmente utilizzato (1 oppure 2); la logica di ricerca controlla il relativo indirizzo e nome Bluetooth, senza cercare contemporaneamente entrambi i telefoni.
+
+### Attenzione: hotspot dello smartphone e affidabilità della ricerca Bluetooth
+
+> **Possibili interferenze su alcuni telefoni:** l'attivazione dell'**hotspot Wi-Fi/tethering** può rendere intermittente la ricerca Bluetooth o impedire al dispositivo di rilevare con continuità lo smartphone autorizzato. Il problema può interessare **sia Find Mode 1 (`N1`–`N9`) sia Find Mode 2 (`F1`–`F9`)**, poiché entrambe dipendono dalla rilevazione del telefono. L'osservazione riguarda specificamente la **funzione hotspot**, non necessariamente la connessione dati mobile o la rete cellulare.
+>
+> Se la rilevazione non è affidabile, per prima cosa **disattivare l'hotspot del telefono** e ripetere le prove mantenendo invariate le altre condizioni. Confrontare più ricerche con hotspot attivo e disattivato; verificare inoltre lo stato del Bluetooth, il nome e l'indirizzo configurati e la stabilità dell'alimentazione del modulo HC-05. La causa precisa e i modelli di telefono interessati **non sono ancora stati accertati definitivamente**: si tratta quindi di una precauzione diagnostica, non di un'incompatibilità generale dimostrata.
+
+In **Find Mode 1**, una mancata rilevazione può impedire l'inibizione di un allarme movimento altrimenti valido (oppure di un allarme PIR abilitato separatamente). In **Find Mode 2**, una mancata rilevazione può essere interpretata come assenza del telefono e provocare una chiamata. Una singola ricerca riuscita non è sufficiente a dimostrare l'affidabilità del sistema.
+
+## Controllo tramite SMS
+
+Il firmware accetta comandi SMS da uno dei due numeri telefonici autorizzati configurati. I comandi sono **sensibili alle maiuscole e minuscole** e sono lunghi **esattamente due caratteri**; in `N1`–`N9` e `F1`–`F9` il secondo carattere è una cifra. I comandi impostano **lo stato corrente durante l'esecuzione**: non si deve presumere che tutte le modifiche rimangano memorizzate dopo uno spegnimento.
+
+| Comando | Operazione |
+| --- | --- |
+| `N1`–`N9` | Attiva Find Mode 1; cifra = tentativi per ciclo di ricerca |
+| `F1`–`F9` | Attiva Find Mode 2; cifra = tentativi per ciclo di ricerca |
+| `Md` | Attiva l'allarme movimento/inclinazione senza ricerca Bluetooth |
+| `Eo` | Attiva l'allarme con contatto esterno normalmente aperto |
+| `Ec` | Attiva l'allarme con contatto esterno normalmente chiuso |
+| `Ex` | Disabilita l'allarme del contatto esterno |
+| `Wc` | Attiva l'allarme PIR senza ricerca Bluetooth |
+| `Bz` | Abilita il buzzer opzionale (utilizzato nella gestione dell'allarme PIR nel firmware attuale) |
+| `P1`, `P2` | Seleziona il numero principale/alternativo e avvia una chiamata |
+| `Ck` | Effettua una chiamata di verifica al numero selezionato |
+| `Rc` | Abilita la risposta automatica alle chiamate in ingresso |
+| `Rs` | Disabilita la risposta automatica e avvia una chiamata |
+| `Dc` | Inibisce le chiamate di allarme e termina l'eventuale chiamata in corso |
+| `Ab` | Accende il Bluetooth e apre una nuova finestra per la configurazione e il timer di inserimento |
+| `Al` | Abilita i lampeggi del LED di alimentazione |
+
+Questi sono i comandi implementati nella routine `listOfSmsCommands()` esaminata; **non** rappresentano tutte le possibili capacità hardware o funzionalità di versioni future del firmware. Alcuni comandi di attivazione avviano immediatamente una chiamata GSM: tenerne conto durante la configurazione.
+
+## Menu Bluetooth
+
+### Menu principale
+
+Il menu principale mostra lo stato corrente dell'allarme e permette di selezionare **Alarm On / Alarm OFF**, **Configuration** e **Security**. Visualizza inoltre temperatura, livello della batteria e l'indicatore dell'ultimo evento (`WhatzUp`). Nel firmware esaminato le lettere utilizzate comprendono `M` (movimento interno), `E` (contatto esterno), `P` (PIR), `T` (temperatura elevata), `V` (tensione bassa) e `X` (stato iniziale).
+
+### Menu Configuration
+
+- **Phone / Ph.Altern.** — numeri telefonici autorizzati principale e alternativo.
+- **N.Phone** — selezione del telefono 1 o 2 per le chiamate e la relativa voce di rilevamento Bluetooth.
+- **TempMax / OffSetTemp** — soglia di allarme temperatura e offset di calibrazione del sensore.
+- **PIR status** — abilita/disabilita l'ingresso PIR, quando la modalità selezionata lo consente.
+- **Addr / Name / Addr2 / Name2** — identificativi Bluetooth configurati per i telefoni (visualizzati quando è attiva una modalità Find).
+- **FindLoop / FindMode** — numero di tentativi di ricerca Bluetooth e modalità operativa (0 = Find disattivato, 1 = Find Mode 1, 2 = Find Mode 2).
+- **Ext.Int / Buzz.** — abilitazione dell'interrupt esterno e del buzzer.
+
+Molte modifiche effettuate tramite queste voci vengono salvate in EEPROM e ripristinate all'inizializzazione del firmware. Al contrario, la maggior parte dei comandi SMS modifica lo stato della sessione corrente.
+
+### Menu Security
+
+Il menu di sicurezza permette di modificare la **password** Bluetooth (dopo aver verificato quella esistente) e il **nome del dispositivo**. Dopo tali modifiche potrebbe essere necessario riconnettere il telefono.
+
+## Sensori, monitoraggio e notifiche
+
+Il firmware comprende un interrupt per movimento/inclinazione, un interrupt per il contatto esterno, un ingresso PIR, un buzzer opzionale, la lettura della temperatura interna del microcontrollore e della tensione di alimentazione. La soglia di tensione bassa è impostata a circa **3,25 V** nel firmware esaminato. Una temperatura elevata o una tensione bassa possono generare chiamate GSM indipendentemente dal normale percorso di allarme movimento.
+
+**Le notifiche sono chiamate GSM**, non SMS in uscita di carattere generale. Gli SMS vengono utilizzati soprattutto per ricevere comandi da remoto. Verificare che la SIM e il modulo GSM riescano a effettuare chiamate e che la selezione del numero sia corretta.
+
+## Configurazione iniziale e diagnostica
+
+Il repository include uno sketch separato, `Portable-Alarm-Initialized`, per inizializzare la EEPROM ed eseguire la diagnostica Bluetooth. L'opzione `EEPROM_INITIALIZATION_ENABLED` è **disabilitata per impostazione predefinita** nel ramo esaminato. Se viene abilitata, la EEPROM viene cancellata e inizializzata nuovamente: salvare prima le impostazioni necessarie e utilizzare questa funzione consapevolmente.
+
+All'avvio il firmware principale stampa `Firmware Git` e `Libraries Git`, consentendo di associare i test hardware alle revisioni del firmware e delle librerie. Le macro di debug seriale sono gestite separatamente dal menu Bluetooth e possono essere disabilitate nella normale compilazione.
+
+## Risoluzione dei problemi
+
+**Il telefono non viene rilevato in modo affidabile in modalità Find:** provare con l'hotspot Wi-Fi del telefono disattivato e ripetere più volte la ricerca a parità di condizioni. Controllare che indirizzo e nome Bluetooth salvati corrispondano al telefono desiderato e che `N.Phone` selezioni la voce corretta. Verificare che il modulo HC-05 riceva un'alimentazione stabile, in particolare se l'allarme funziona a batteria o tramite convertitori di tensione. Nel codice esaminato la ricerca Bluetooth utilizza per impostazione predefinita il percorso `V2`; non presumere che gli altri percorsi implementativi siano già stati validati sul dispositivo.
+
+**L'allarme chiama un numero sbagliato o non chiama:** controllare `Phone`, `Ph.Altern.`, `N.Phone`, la SIM e il modulo GSM, nonché l'eventuale comando di inibizione delle chiamate (`Dc`). I comandi `P1`, `P2` e `Ck` sono utili per le prove, ricordando che effettuano chiamate reali.
+
+**Le impostazioni scompaiono al riavvio:** verificare se la modifica è stata effettuata con un comando SMS temporaneo oppure tramite il menu di configurazione Bluetooth, che salva numerosi parametri in EEPROM. Controllare lo stato dell'inizializzazione EEPROM soltanto quando necessario.
+
+**L'inserimento automatico dell'allarme è inatteso:** considerare il timer di cinque minuti e i suoi riavvii quando vengono aperti i menu Bluetooth. Verificare lo stato effettivo dell'allarme con una prova controllata.
+
+## Hardware ed espansioni modulari
+
+Il progetto nasce come piattaforma modulare: l'hardware dispone di tre porte di connessione USB per moduli e sensori esterni compatibili. Il materiale storico del progetto illustra anche possibili estensioni, come sensori di gas o fumo, rilevazione di fiamma, lettori di impronte digitali e NFC. **Si tratta di possibilità di espansione, non di funzionalità necessariamente implementate nel firmware attuale.**
+
+## Documentazione
+
+[Scarica il volantino di Portable Alarm System (DOCX)](Documents/Portable%20volantino.docx)
+
+## Video
+
+Dimostrazione del progetto:
+
+https://www.youtube.com/watch?v=Jp0SQHU51y8
+
+## Immagini del progetto
+
+[![Portable Alarm System](SitoPortable/photo%20usate/portable1.png)](SitoPortable/photo%20usate/portable1.png)
+
+[![Prototipo Portable Alarm System](SitoPortable/photo%20usate/IMG_20190405_110031.jpg)](SitoPortable/photo%20usate/IMG_20190405_110031.jpg)
+
+[![Dettaglio Portable Alarm System](SitoPortable/photo%20usate/terza.png)](SitoPortable/photo%20usate/terza.png)
+
+## Contenuto del repository
+
+Il repository contiene il firmware principale, uno sketch separato per l'inizializzazione EEPROM/Bluetooth, file di progettazione hardware, documentazione storica, immagini dimostrative e note di sviluppo. Alcuni componenti Bluetooth e delle librerie sono in corso di riorganizzazione: questa guida descrive i comportamenti osservati nel codice e non garantisce che ogni funzionalità sia supportata su tutte le revisioni hardware.
+
+</details>
+
+<details>
+<summary><strong>English — User guide</strong></summary>
+
 Portable Alarm System is a compact, modular alarm and monitoring device designed to protect objects, rooms, vehicles and other small environments. It detects alarm conditions and can call a configured phone number through its GSM module. Bluetooth provides local configuration and, in selected operating modes, detection of an authorised mobile phone.
 
 The firmware is designed for an AVR/Arduino-compatible microcontroller and can work with external sensors and accessories.
@@ -131,3 +274,5 @@ https://www.youtube.com/watch?v=Jp0SQHU51y8
 ## Repository contents
 
 The repository contains the main firmware, a separate EEPROM/Bluetooth initialisation sketch, hardware design files, historical documentation, demonstration images and development notes. Some Bluetooth and library components are actively being refactored; this guide describes observed source behaviour rather than guaranteeing that every feature is supported on every hardware revision.
+
+</details>

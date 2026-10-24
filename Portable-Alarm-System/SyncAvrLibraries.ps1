@@ -174,7 +174,7 @@ try {
     }
     # The suffix describes the build origin, independently of the library revision.
     if ($branch -notin @('main', 'master')) { $shortVersion += '*' }
-    if ($hasDirtyLibraries) { $shortVersion += '-dirty' }
+    if ($hasDirtyLibraries) { $shortVersion += 'X' }
     $headerLine = "#define GIT_LIBRARIES_VERSION `"$shortVersion`"`n"
     [System.IO.File]::AppendAllText($GeneratedHeader, $headerLine, (New-Object System.Text.UTF8Encoding($false)))
     Write-Host "GIT_LIBRARIES_VERSION: $shortVersion"

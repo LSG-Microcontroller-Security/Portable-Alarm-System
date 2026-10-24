@@ -72,7 +72,7 @@ jobs:
               echo "Release CI refuses uncommitted firmware changes" >&2
               exit 1
             fi
-            VERSION+="-dirty"
+            VERSION+="X"
           fi
           printf '#pragma once\n#define GIT_VERSION "%s"\n' "$VERSION" > "$GPM_SKETCH_PATH/GitVersion.generated.h"
       - name: Compile AVR firmware

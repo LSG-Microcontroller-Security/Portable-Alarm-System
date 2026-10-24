@@ -39,7 +39,7 @@ if /I not "%BRANCH%"=="main" if /I not "%BRANCH%"=="master" set "VERSION=%HASH%*
 REM Synchronize local Git library revisions before completing this firmware build.
 REM The shared .gpm/avr-libraries.json travels with commits through PRs and releases.
 REM The library helper appends its macro; the firmware macro is written afterward
-REM so a manifest updated by the helper is correctly flagged as dirty.
+REM so a manifest updated by the helper is marked with X as locally modified.
 powershell.exe -NoProfile -STA -NonInteractive -ExecutionPolicy Bypass -File "%SKETCH%SyncAvrLibraries.ps1"
 if errorlevel 1 goto fail
 REM Dirty repositories are validated by the library helper on all branches.
@@ -48,7 +48,7 @@ if /I "%BRANCH%"=="main" goto publish_version
 if /I "%BRANCH%"=="master" goto publish_version
 git -C "%REPO%" status --porcelain -- . ":(exclude)**/GitVersion.generated.h" ":(exclude,glob)**/*.vcxproj" > "%GITTMP%"
 if errorlevel 1 goto fail
-for %%A in ("%GITTMP%") do if not "%%~zA"=="0" set "VERSION=%VERSION%-dirty"
+for %%A in ("%GITTMP%") do if not "%%~zA"=="0" set "VERSION=%VERSION%X"
 :publish_version
 >> "%TMP%" echo #define GIT_VERSION "%VERSION%"
 echo Git version: %VERSION%

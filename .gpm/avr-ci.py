@@ -74,12 +74,19 @@ def main():
         raise ValueError("Missing generated firmware version header: " + str(header))
     # One Git library uses its abbreviated commit, just like GIT_VERSION.
     # For multiple pinned dependencies, use a stable 7-character fingerprint.
-    if not versions:
-        short_version = "XXXXXXX"
-    elif len(versions) == 1 and len(git_refs) == 1:
+    if len(versions) == 1 and len(git_refs) == 1:
         short_version = git_refs[0][:7].lower()
     else:
+        # Deterministic fingerprint for multiple (or zero) dependencies.
         short_version = hashlib.sha256(";".join(versions).encode("utf-8")).hexdigest()[:7]
+    # For pull requests, GitHub checks out a merge commit; mark the source branch.
+    branch = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
+    if not branch:
+        branch = subprocess.check_output(
+            ["git", "branch", "--show-current"], text=True
+        ).strip()
+    if branch not in ("main", "master"):
+        short_version += "*"
     with header.open("a", encoding="utf-8") as output:
         output.write("#define GIT_LIBRARIES_VERSION " + json.dumps(short_version) + "\n")
     print("CI GIT_LIBRARIES_VERSION:", short_version, flush=True)

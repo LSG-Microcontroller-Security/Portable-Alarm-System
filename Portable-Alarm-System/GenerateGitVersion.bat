@@ -57,9 +57,10 @@ if errorlevel 1 goto fail
 del "%GITTMP%" >nul 2>&1
 exit /b 0
 :fail
-> "%OUT%" echo #pragma once
->> "%OUT%" echo #error %FAIL_DEFINE%
+REM A failed prebuild must not poison Visual Micro's next prototype scan.
+REM The nonzero exit status is the build blocker; do not persist #error in an include.
+if exist "%OUT%" del /f /q "%OUT%" >nul 2>&1
 del "%TMP%" >nul 2>&1
 del "%GITTMP%" >nul 2>&1
-echo ERROR: Cannot generate GitVersion.generated.h from Git state.
+echo ERROR: %FAIL_DEFINE% - Cannot generate GitVersion.generated.h from Git state.
 exit /b 1

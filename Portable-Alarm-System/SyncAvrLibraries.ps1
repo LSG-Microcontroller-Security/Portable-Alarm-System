@@ -66,6 +66,7 @@ try {
     $changed = $false
     $developmentBranch = $branch -match '^(develop|feature/.+|fix/.+|bugfix/.+|task/.+|hotfix/.+)$'
     $hasDirtyLibraries = $false
+    $hasUnofficialLibraryBranch = $false
     $dirtyNames = New-Object 'System.Collections.Generic.List[string]'
     $firmwareStatus = Invoke-Git $repo @('status', '--porcelain', '--', '.', ':(exclude)**/GitVersion.generated.h', ':(exclude,glob)**/*.vcxproj')
     if ($firmwareStatus) { $dirtyNames.Add((Split-Path $repo -Leaf)) }
@@ -103,6 +104,18 @@ try {
         }
         $head = Invoke-Git $libraryRoot @('rev-parse', 'HEAD')
         if ($head -notmatch '^[a-fA-F0-9]{40}$') { throw "Invalid local Git SHA for $libraryRoot" }
+        # This library's branch must be independent from the firmware branch.
+        $libraryBranch = Invoke-Git $libraryRoot @('branch', '--show-current')
+        if ($libraryBranch) {
+            if ($libraryBranch -notin @('main', 'master')) { $hasUnofficialLibraryBranch = $true }
+        }
+        else {
+            # Detached HEAD: the pinned commit is official if reachable from
+            # local or remote main/master, without requiring a network fetch.
+            $containing = Invoke-Git $libraryRoot @('branch', '--all', '--contains', 'HEAD', '--format=%(refname:short)')
+            $officialBranches = @($containing -split "\r?\n" | Where-Object { $_ -in @('main', 'master', 'origin/main', 'origin/master') })
+            if ($officialBranches.Count -eq 0) { $hasUnofficialLibraryBranch = $true }
+        }
         $localRevisions += [pscustomobject]@{ url = $source.url; ref = $head }
         if ($source.ref -ne $head) {
             if (-not $developmentBranch) {
@@ -172,8 +185,9 @@ try {
         finally { $sha256.Dispose() }
         $shortVersion = [System.BitConverter]::ToString($digest).Replace('-', '').Substring(0, 7).ToLowerInvariant()
     }
-    # The suffix describes the build origin, independently of the library revision.
-    if ($branch -notin @('main', 'master')) { $shortVersion += '*' }
+    # Library origin is determined by library checkout branch(es), not firmware.
+    # A combined version is unofficial if any Git library is unofficial.
+    if ($hasUnofficialLibraryBranch) { $shortVersion += '*' }
     if ($hasDirtyLibraries) { $shortVersion += 'X' }
     $headerLine = "#define GIT_LIBRARIES_VERSION `"$shortVersion`"`n"
     [System.IO.File]::AppendAllText($GeneratedHeader, $headerLine, (New-Object System.Text.UTF8Encoding($false)))

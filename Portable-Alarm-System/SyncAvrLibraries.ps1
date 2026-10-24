@@ -24,8 +24,8 @@ function Request-DirtyBuildApproval([string]$Message) {
     try {
         Add-Type -AssemblyName System.Windows.Forms
         $answer = [System.Windows.Forms.MessageBox]::Show(
-            "$Message`r`n`r`nContinuare la compilazione?",
-            'GPM - Repository Dirty',
+            "$Message`r`n`r`nThese local changes are not committed to Git and may make this build unreproducible.`r`n`r`nDo you want to continue the build anyway?",
+            'GPM - WARNING: Uncommitted Git Changes',
             [System.Windows.Forms.MessageBoxButtons]::YesNo,
             [System.Windows.Forms.MessageBoxIcon]::Warning,
             [System.Windows.Forms.MessageBoxDefaultButton]::Button2
@@ -117,14 +117,14 @@ try {
     # Check all participating repositories together, before updating the manifest.
     if ($dirtyNames.Count -gt 0) {
         $names = ($dirtyNames | Select-Object -Unique) -join "`r`n- "
-        $message = "Repository Git con modifiche non committate:`r`n- $names"
+        $message = "WARNING! GPM detected uncommitted changes in the following Git repositories:`r`n- $names"
         if (-not $developmentBranch) {
-            throw "$message`r`nCompilazione interrotta: branch protetta."
+            throw "$message`r`nBuild stopped: this is a protected or non-development branch."
         }
         if (-not (Request-DirtyBuildApproval $message)) {
-            throw 'Compilazione annullata dall utente: repository Dirty.'
+            throw 'Build cancelled by user: uncommitted Git changes were not approved.'
         }
-        Write-Warning "Compilazione Dirty autorizzata per: $($dirtyNames -join ', ')"
+        Write-Warning "Uncommitted Git changes approved for build: $($dirtyNames -join ', ')"
     }
     if ($revisionErrors.Count -gt 0) {
         throw ($revisionErrors -join "`n")

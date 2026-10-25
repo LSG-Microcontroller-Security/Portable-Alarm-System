@@ -13,6 +13,27 @@ function Invoke-Git([string]$Location, [string[]]$Arguments) {
     }
     return ($value -join "`n").Trim()
 }
+# The GUI is available only for a local, interactive Windows build.
+# Keeping this as a separate function also allows headless regression tests
+# to substitute a decision without weakening the production safety checks.
+function Request-DirtyBuildApproval([string]$Message) {
+    if ($env:CI -or $env:GITHUB_ACTIONS -or -not [Environment]::UserInteractive -or
+        [Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
+        throw "$Message`r`nBuild stopped: interactive confirmation is unavailable."
+    }
+    try {
+        Add-Type -AssemblyName System.Windows.Forms
+        $answer = [System.Windows.Forms.MessageBox]::Show(
+            "$Message`r`n`r`nThese local changes are not committed to Git and may make this build unreproducible.`r`n`r`nDo you want to continue the build anyway?",
+            'GPM - WARNING: Uncommitted Git Changes',
+            [System.Windows.Forms.MessageBoxButtons]::YesNo,
+            [System.Windows.Forms.MessageBoxIcon]::Warning,
+            [System.Windows.Forms.MessageBoxDefaultButton]::Button2
+        )
+        return ($answer -eq [System.Windows.Forms.DialogResult]::Yes)
+    }
+    catch { throw "$Message`r`nCannot display confirmation: $($_.Exception.Message)" }
+}
 function Normalize-Remote([string]$Remote) {
     $url = $Remote.Trim()
     if ($url -match '^git@github\.com:(.+)$') { $url = "https://github.com/$($Matches[1])" }
@@ -45,8 +66,13 @@ try {
     $changed = $false
     $developmentBranch = $branch -match '^(develop|feature/.+|fix/.+|bugfix/.+|task/.+|hotfix/.+)$'
     $hasDirtyLibraries = $false
+    $hasUnofficialLibraryBranch = $false
+    $dirtyNames = New-Object 'System.Collections.Generic.List[string]'
+    $firmwareStatus = Invoke-Git $repo @('status', '--porcelain', '--', '.', ':(exclude)**/GitVersion.generated.h', ':(exclude,glob)**/*.vcxproj')
+    if ($firmwareStatus) { $dirtyNames.Add((Split-Path $repo -Leaf)) }
     $localRevisions = @()
     $pendingUpdates = @()
+    $revisionErrors = @()
     foreach ($source in $repositories) {
         $candidates = @($localSources | Where-Object {
             (Normalize-Remote $_.url) -ieq (Normalize-Remote $source.url)
@@ -73,22 +99,48 @@ try {
         }
         $status = Invoke-Git $libraryRoot @('status', '--porcelain')
         if ($status) {
-            if (-not $developmentBranch) {
-                throw "Uncommitted changes in local libraries: $libraryRoot. Commit or restore them before building."
-            }
+            $dirtyNames.Add((Split-Path $libraryRoot -Leaf))
             $hasDirtyLibraries = $true
-            Write-Warning "Uncommitted local AVR library changes in $libraryRoot. Development build allowed; its libraries are not reproducible from Git."
         }
         $head = Invoke-Git $libraryRoot @('rev-parse', 'HEAD')
         if ($head -notmatch '^[a-fA-F0-9]{40}$') { throw "Invalid local Git SHA for $libraryRoot" }
+        # This library's branch must be independent from the firmware branch.
+        $libraryBranch = Invoke-Git $libraryRoot @('branch', '--show-current')
+        if ($libraryBranch) {
+            if ($libraryBranch -notin @('main', 'master')) { $hasUnofficialLibraryBranch = $true }
+        }
+        else {
+            # Detached HEAD: the pinned commit is official if reachable from
+            # local or remote main/master, without requiring a network fetch.
+            $containing = Invoke-Git $libraryRoot @('branch', '--all', '--contains', 'HEAD', '--format=%(refname:short)')
+            $officialBranches = @($containing -split "\r?\n" | Where-Object { $_ -in @('main', 'master', 'origin/main', 'origin/master') })
+            if ($officialBranches.Count -eq 0) { $hasUnofficialLibraryBranch = $true }
+        }
         $localRevisions += [pscustomobject]@{ url = $source.url; ref = $head }
         if ($source.ref -ne $head) {
             if (-not $developmentBranch) {
-                throw "Library version mismatch on protected/non-development branch '$branch'. Expected $($source.ref), local $head. Update and commit the manifest on a development branch first."
+                $revisionErrors += "Library version mismatch on protected/non-development branch '$branch'. Expected $($source.ref), local $head. Update and commit the manifest on a development branch first."
             }
-            $pendingUpdates += [pscustomobject]@{ source = $source; head = $head }
+            else {
+                $pendingUpdates += [pscustomobject]@{ source = $source; head = $head }
+            }
         }
         else { Write-Host "AVR libraries unchanged: $head" }
+    }
+    # Check all participating repositories together, before updating the manifest.
+    if ($dirtyNames.Count -gt 0) {
+        $names = ($dirtyNames | Select-Object -Unique) -join "`r`n- "
+        $message = "WARNING! GPM detected uncommitted changes in the following Git repositories:`r`n- $names"
+        if (-not $developmentBranch) {
+            throw "$message`r`nBuild stopped: this is a protected or non-development branch."
+        }
+        if (-not (Request-DirtyBuildApproval $message)) {
+            throw 'Build cancelled by user: uncommitted Git changes were not approved.'
+        }
+        Write-Warning "Uncommitted Git changes approved for build: $($dirtyNames -join ', ')"
+    }
+    if ($revisionErrors.Count -gt 0) {
+        throw ($revisionErrors -join "`n")
     }
     # Never record a partial set of local commits while any library has
     # uncommitted changes. Only clean development checkouts update the manifest.
@@ -120,19 +172,23 @@ try {
     # Same seven-character interface as GIT_VERSION, including on development branches.
     # One Git repository: its abbreviated commit. Multiple dependencies: a
     # deterministic seven-character fingerprint of all pinned references.
-    # Development builds do not claim a reproducible library revision.
-    # Keep the same XXXXXXX marker already used by firmware in develop/feature.
-    $shortVersion = 'XXXXXXX'
-    if (-not $developmentBranch -and $versions.Count -eq 1 -and $repositories.Count -eq 1) {
+    # Always use a real Git SHA when exactly one Git repository is pinned.
+    # Multiple dependencies (or none) use a deterministic SHA256 fingerprint;
+    # an empty dependency set has the SHA256(empty string) fingerprint.
+    if ($versions.Count -eq 1 -and $repositories.Count -eq 1) {
         $shortVersion = ([string]$localRevisions[0].ref).Substring(0, 7).ToLowerInvariant()
     }
-    elseif (-not $developmentBranch -and $versions.Count -gt 0) {
+    else {
         $data = [System.Text.Encoding]::UTF8.GetBytes(($versions -join ';'))
         $sha256 = [System.Security.Cryptography.SHA256]::Create()
         try { $digest = $sha256.ComputeHash($data) }
         finally { $sha256.Dispose() }
         $shortVersion = [System.BitConverter]::ToString($digest).Replace('-', '').Substring(0, 7).ToLowerInvariant()
     }
+    # Library origin is determined by library checkout branch(es), not firmware.
+    # A combined version is unofficial if any Git library is unofficial.
+    if ($hasUnofficialLibraryBranch) { $shortVersion += '*' }
+    if ($hasDirtyLibraries) { $shortVersion += 'X' }
     $headerLine = "#define GIT_LIBRARIES_VERSION `"$shortVersion`"`n"
     [System.IO.File]::AppendAllText($GeneratedHeader, $headerLine, (New-Object System.Text.UTF8Encoding($false)))
     Write-Host "GIT_LIBRARIES_VERSION: $shortVersion"

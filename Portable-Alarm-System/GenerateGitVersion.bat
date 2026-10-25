@@ -14,11 +14,9 @@ if errorlevel 1 goto fail
 set /p BRANCH=<"%GITTMP%"
 if not defined BRANCH goto fail
 echo Git branch: %BRANCH%
-if /I not "%BRANCH:~0,8%"=="release/" goto development
+if /I not "%BRANCH:~0,8%"=="release/" goto generate_version
 set "FAIL_DEFINE=INVALID_RELEASE_BUILD"
-git -C "%REPO%" status --porcelain -- . ":(exclude)**/GitVersion.generated.h" ":(exclude,glob)**/*.vcxproj" > "%GITTMP%"
-if errorlevel 1 goto fail
-for %%A in ("%GITTMP%") do if not "%%~zA"=="0" goto fail
+REM Dirty repositories are reported together by SyncAvrLibraries.ps1.
 git -C "%REPO%" fetch origin "%BRANCH%" --quiet
 if errorlevel 1 goto fail
 git -C "%REPO%" rev-parse HEAD > "%GITTMP%"
@@ -28,31 +26,41 @@ git -C "%REPO%" rev-parse FETCH_HEAD > "%GITTMP%"
 if errorlevel 1 goto fail
 set /p REMOTE=<"%GITTMP%"
 if /I not "%LOCAL%"=="%REMOTE%" goto fail
+:generate_version
+REM Always use the real firmware commit SHA on every branch.
 git -C "%REPO%" rev-parse --short=7 HEAD > "%GITTMP%"
 if errorlevel 1 goto fail
 set /p HASH=<"%GITTMP%"
 if not defined HASH goto fail
+set "VERSION=%HASH%"
+REM An asterisk marks non-production branches, including release/*.
+if /I not "%BRANCH%"=="main" if /I not "%BRANCH%"=="master" set "VERSION=%HASH%*"
 > "%TMP%" echo #pragma once
->> "%TMP%" echo #define GIT_VERSION "%HASH%"
-echo Git version: %HASH%
-goto finish
-:development
-> "%TMP%" echo #pragma once
->> "%TMP%" echo #define GIT_VERSION "XXXXXXX"
-echo Git version: XXXXXXX
-:finish
 REM Synchronize local Git library revisions before completing this firmware build.
 REM The shared .gpm/avr-libraries.json travels with commits through PRs and releases.
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%SKETCH%SyncAvrLibraries.ps1"
+REM The library helper appends its macro; the firmware macro is written afterward
+REM so a manifest updated by the helper is marked with X as locally modified.
+powershell.exe -NoProfile -STA -NonInteractive -ExecutionPolicy Bypass -File "%SKETCH%SyncAvrLibraries.ps1"
 if errorlevel 1 goto fail
+REM Dirty repositories are validated by the library helper on all branches.
+if /I "%BRANCH:~0,8%"=="release/" goto publish_version
+if /I "%BRANCH%"=="main" goto publish_version
+if /I "%BRANCH%"=="master" goto publish_version
+git -C "%REPO%" status --porcelain -- . ":(exclude)**/GitVersion.generated.h" ":(exclude,glob)**/*.vcxproj" > "%GITTMP%"
+if errorlevel 1 goto fail
+for %%A in ("%GITTMP%") do if not "%%~zA"=="0" set "VERSION=%VERSION%X"
+:publish_version
+>> "%TMP%" echo #define GIT_VERSION "%VERSION%"
+echo Git version: %VERSION%
 move /y "%TMP%" "%OUT%" >nul
 if errorlevel 1 goto fail
 del "%GITTMP%" >nul 2>&1
 exit /b 0
 :fail
-> "%OUT%" echo #pragma once
->> "%OUT%" echo #error %FAIL_DEFINE%
+REM A failed prebuild must not poison Visual Micro's next prototype scan.
+REM The nonzero exit status is the build blocker; do not persist #error in an include.
+if exist "%OUT%" del /f /q "%OUT%" >nul 2>&1
 del "%TMP%" >nul 2>&1
 del "%GITTMP%" >nul 2>&1
-echo ERROR: Cannot generate GitVersion.generated.h from Git state.
+echo ERROR: %FAIL_DEFINE% - Cannot generate GitVersion.generated.h from Git state.
 exit /b 1

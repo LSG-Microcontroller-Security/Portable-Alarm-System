@@ -1,6 +1,11 @@
 @echo off
 setlocal EnableExtensions
 set "SKETCH=%~dp0"
+REM Optional Visual Micro build.path; sketch sources may be copied before prebuild.
+set "BUILD=%~1"
+set "BUILDDIR="
+if defined BUILD for %%I in ("%BUILD%\.") do set "BUILDDIR=%%~fI"
+for %%I in ("%SKETCH%.") do set "SKETCHDIR=%%~fI"
 set "OUT=%SKETCH%GitVersion.generated.h"
 set "TMP=%SKETCH%GitVersion.generated.tmp"
 set "GITTMP=%TEMP%\GpmGitVersion_%RANDOM%_%RANDOM%.txt"
@@ -54,12 +59,31 @@ for %%A in ("%GITTMP%") do if not "%%~zA"=="0" set "VERSION=%VERSION%X"
 echo Git version: %VERSION%
 move /y "%TMP%" "%OUT%" >nul
 if errorlevel 1 goto fail
+REM Visual Micro copies the sketch into build.path before some build hooks.
+REM Keep the generated header used by the compiler in sync on the FIRST build.
+if not defined BUILDDIR goto success
+if not exist "%BUILDDIR%\" goto fail
+if /I "%BUILDDIR%"=="%SKETCHDIR%" goto success
+copy /y "%OUT%" "%BUILDDIR%\GitVersion.generated.h" >nul
+if errorlevel 1 goto fail
+REM Arduino build layouts may place sketch sources under build.path\sketch.
+if exist "%BUILDDIR%\sketch\" (
+    copy /y "%OUT%" "%BUILDDIR%\sketch\GitVersion.generated.h" >nul
+    if errorlevel 1 goto fail
+)
+echo Git version synced to build directory: %BUILDDIR%
+:success
 del "%GITTMP%" >nul 2>&1
 exit /b 0
 :fail
 REM A failed prebuild must not poison Visual Micro's next prototype scan.
 REM The nonzero exit status is the build blocker; do not persist #error in an include.
 if exist "%OUT%" del /f /q "%OUT%" >nul 2>&1
+REM Never leave a stale generated header in the compiler workspace on failure.
+if defined BUILDDIR if /I not "%BUILDDIR%"=="%SKETCHDIR%" (
+    if exist "%BUILDDIR%\GitVersion.generated.h" del /f /q "%BUILDDIR%\GitVersion.generated.h" >nul 2>&1
+    if exist "%BUILDDIR%\sketch\GitVersion.generated.h" del /f /q "%BUILDDIR%\sketch\GitVersion.generated.h" >nul 2>&1
+)
 del "%TMP%" >nul 2>&1
 del "%GITTMP%" >nul 2>&1
 echo ERROR: %FAIL_DEFINE% - Cannot generate GitVersion.generated.h from Git state.
